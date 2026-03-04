@@ -1,0 +1,17 @@
+[project]
+name = "ai-absa"
+version = "0.1.0"
+description = "This project aims to build an Aspect-Based Sentiment Analysis system specifically for large language models (LLMs) such as ChatGPT, Claude, Gemini, and DeepSeek."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "accelerate>=1.12.0",
+    "numpy>=2.4.2",
+    "pandas>=3.0.1",
+    "pydantic>=2.12.5",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+]

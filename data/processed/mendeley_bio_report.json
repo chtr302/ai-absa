@@ -1,0 +1,374 @@
+{
+  "total_rows": 704,
+  "rows_with_aspect_tags": 401,
+  "rows_without_aspect_tags": 303,
+  "coverage_pct": 56.96,
+  "avg_tokens_per_row": 96.48,
+  "bio_label_counts": {
+    "O": 67135,
+    "B-ASP": 762,
+    "I-ASP": 27
+  },
+  "aspect_frequency": {
+    "Accuracy": 92,
+    "Content": 87,
+    "Emotional Intelligence": 86,
+    "Privacy": 76,
+    "Subscription": 78,
+    "Time": 60,
+    "UI (User Interface)": 68,
+    "Update": 60,
+    "Usefulness": 97
+  },
+  "sentiment_distribution": {
+    "Negative": 391,
+    "Neutral": 64,
+    "Positive": 249
+  },
+  "aspect_sentiment_distribution": {
+    "Accuracy": {
+      "Negative": 55,
+      "Neutral": 7,
+      "Positive": 30
+    },
+    "Content": {
+      "Negative": 36,
+      "Neutral": 6,
+      "Positive": 45
+    },
+    "Emotional Intelligence": {
+      "Negative": 45,
+      "Neutral": 7,
+      "Positive": 34
+    },
+    "Privacy": {
+      "Negative": 47,
+      "Neutral": 16,
+      "Positive": 13
+    },
+    "Subscription": {
+      "Negative": 63,
+      "Neutral": 3,
+      "Positive": 12
+    },
+    "Time": {
+      "Negative": 41,
+      "Neutral": 3,
+      "Positive": 16
+    },
+    "UI (User Interface)": {
+      "Negative": 38,
+      "Neutral": 7,
+      "Positive": 23
+    },
+    "Update": {
+      "Negative": 39,
+      "Neutral": 10,
+      "Positive": 11
+    },
+    "Usefulness": {
+      "Negative": 27,
+      "Neutral": 5,
+      "Positive": 65
+    }
+  },
+  "coverage_by_aspect": {
+    "Content": 42,
+    "Accuracy": 41,
+    "Emotional Intelligence": 41,
+    "UI (User Interface)": 32,
+    "Update": 25,
+    "Subscription": 60,
+    "Usefulness": 52,
+    "Time": 50,
+    "Privacy": 58
+  },
+  "coverage_by_aspect_pct": {
+    "Accuracy": 44.57,
+    "Content": 48.28,
+    "Emotional Intelligence": 47.67,
+    "Privacy": 76.32,
+    "Subscription": 76.92,
+    "Time": 83.33,
+    "UI (User Interface)": 47.06,
+    "Update": 41.67,
+    "Usefulness": 53.61
+  },
+  "top_matched_terms": {
+    "subscription": 33,
+    "data": 30,
+    "time": 27,
+    "helpful": 23,
+    "free": 23,
+    "privacy": 23,
+    "wrong": 17,
+    "paid": 15,
+    "human": 14,
+    "private": 14,
+    "help": 12,
+    "update": 11,
+    "version": 11,
+    "answers": 11,
+    "accurate": 11,
+    "premium": 10,
+    "feature": 10,
+    "paying": 9,
+    "long": 9,
+    "fast": 9,
+    "hours": 9,
+    "writing": 8,
+    "tone": 8,
+    "incorrect": 7,
+    "helps": 7,
+    "responses": 7,
+    "takes": 7,
+    "minutes": 7,
+    "slow": 7,
+    "experience": 6
+  },
+  "unmatched_examples_by_aspect": {
+    "Content": [
+      {
+        "row_id": 9,
+        "argument": "It's an excellent app, and Copilot is just a miracle of science. It is so human and so friendly that I have no words.",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 14,
+        "argument": "I don't recommend at all!",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 43,
+        "argument": "It also cite the websites from Forbes",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 52,
+        "argument": "\"It also cite the websites from Forbes \"How To Change A Child's Last Name Legally In 2024 - Forbes\" and selfhelp.court \"Change child's name both parents\".\"",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 59,
+        "argument": "It will be much helpful if more related information or websites are attached so that I can research in more details.",
+        "sentiment": "Negative"
+      }
+    ],
+    "Usefulness": [
+      {
+        "row_id": 12,
+        "argument": "Repeatedly says something went wrong.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 24,
+        "argument": "Canva is good for making designs by yourself.",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 27,
+        "argument": "can I still get compensation if I was partially at fault in the car accident?",
+        "sentiment": "Neutral"
+      },
+      {
+        "row_id": 33,
+        "argument": "ChatGPT responded to my question and answered that \\Compensation for injuries sustained in an accident can still be pursued",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 36,
+        "argument": "It's principally for graphic designing, but I use it more for presenting or sometimes for editing documents",
+        "sentiment": "Positive"
+      }
+    ],
+    "Emotional Intelligence": [
+      {
+        "row_id": 13,
+        "argument": "Grok hallucinates like a sailor",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 116,
+        "argument": "\"You can correct it but it'll go 'oh sorry' and then double down.\"",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 134,
+        "argument": "Gemini lists 8 required documents of selling houses in California: California Disclosure Requirements, Transfer Disclosure Statement (TDS), Natural Hazard Disclosure Statement, Seller Property Questionnaire, Title Company, Escrow Agent, Home Inspection, Lead-Based Paint Disclosure. I compared the results from Gemini with the ones from ChatGPT: Megan's Law Disclosure, Purchase Agreement, Seller Property Questionnaire, Statewide Buyer and Seller Advisory are missing. But Gemini advises to include Home Inspection, Lead-Based Paint Disclosure. So maybe it'a draw between Gemini and ChatGPT on the question about real-estate law? I still needs to delve into more information about the requirements. \\ \\ Prompt: You are a lawyer specialized in real estate law. I will consult you a few questions. And my questions include \\What are the legal requirements for selling a house in California?\\\"\"",
+        "sentiment": "Neutral"
+      },
+      {
+        "row_id": 204,
+        "argument": "Arrogant, rude and wrong Tonight I said something about a reaction to Rob Reiner and his wife's death and GPT 5.2 gave me this big long spiel about how it was fake news, turn the TV off immediately etc",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 240,
+        "argument": "t is not something you can expect from ChatGpt - such content is not available there, so don't get your hopes high for AI girlfriends these",
+        "sentiment": "Negative"
+      }
+    ],
+    "UI (User Interface)": [
+      {
+        "row_id": 25,
+        "argument": "when you add 3 or 4 people into the mix, things get kind of busy and unpleasant to work with.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 109,
+        "argument": "should be easily covered in the system prompt.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 245,
+        "argument": "Fourth, it is so difficult to find your receipts, account details, ability to cancel Auto Renewal, and to navigate settings and so on...it is not user friendly or intuitive",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 287,
+        "argument": "I feel like my eyeballs are squashed.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 290,
+        "argument": "The moment I enter DeepL, my eyes burn",
+        "sentiment": "Negative"
+      }
+    ],
+    "Accuracy": [
+      {
+        "row_id": 32,
+        "argument": "Some explanations jump around or use complicated wording",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 44,
+        "argument": "I just found basics, and not what I was looking for when I opened a graphic design software.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 48,
+        "argument": "Sometimes it'll generate a prompt, and then tell you it's against the guidelines when you try to generate the exact same prompt word for word.Cash grab, and a sad one on top of it.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 75,
+        "argument": "Perplexity does a good job summarizing NVIDIA's Q1 FY25 GAAP Financial Report Summary, and gives the number of Revenue: $26.0 billion up 18% quarter-over-quarter, Gross margin: 78.4%, up 2.4 percentage points from Q4, Operating income: $16.91 billion, up 24% from Q4 and 690%, Net income: $14.88 billion, up 21% from Q4",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 82,
+        "argument": "And I even double checked the July 2024 financial data, which is correct.",
+        "sentiment": "Positive"
+      }
+    ],
+    "Update": [
+      {
+        "row_id": 77,
+        "argument": "So I am not very satisfied with this results. Why can't it have access to some financial data, at least yesterday's archived data?",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 80,
+        "argument": "ChatGPT just refused to answer my questions saying \\I don't have real-time access to specific financial data for companies like Nvidia",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 100,
+        "argument": "They are slowly making improvements each week.",
+        "sentiment": "Positive"
+      },
+      {
+        "row_id": 206,
+        "argument": "Hurriedly put together a new model and get it online so the paying customers can be used to see how it goes.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 249,
+        "argument": "they never fix their issues",
+        "sentiment": "Negative"
+      }
+    ],
+    "Subscription": [
+      {
+        "row_id": 169,
+        "argument": "they fail to tell you that they randomly limit your Pro prompts.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 170,
+        "argument": "Perplexity has literally ZERO customer support.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 243,
+        "argument": "Doesn’t save data when asked, even when you pay for the updated version",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 273,
+        "argument": "This is not worth the $20",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 294,
+        "argument": "More like sign in to lose your data.",
+        "sentiment": "Negative"
+      }
+    ],
+    "Time": [
+      {
+        "row_id": 219,
+        "argument": "during a project which should have taken under a fortnight but is now in its 6th month.",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 230,
+        "argument": "2 weeks of promises and hell of a lot of questions....and nothing at the end",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 250,
+        "argument": "SUPPOSED TO MAKE LIFE EASIER BUT SPEND THE WHOLE DAY",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 288,
+        "argument": "very very bad, when an AI gave it 10 seconds to think",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 309,
+        "argument": "voice input is terrible",
+        "sentiment": "Negative"
+      }
+    ],
+    "Privacy": [
+      {
+        "row_id": 332,
+        "argument": "immediate response or close enough but they just went completely silent and supporting the scammers. My identification might be stolen too by Gemini - woeful company",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 419,
+        "argument": "\"They are fundamentally too concerned/obsessed with information gatekeeping, control and manipulation...\"",
+        "sentiment": "Negative"
+      },
+      {
+        "row_id": 466,
+        "argument": "they want to create a hyper personally targeting browser.",
+        "sentiment": "Neutral"
+      },
+      {
+        "row_id": 467,
+        "argument": "Google began as a CIA op",
+        "sentiment": "Neutral"
+      },
+      {
+        "row_id": 468,
+        "argument": "they want to create a hyper personally targeting browser.",
+        "sentiment": "Neutral"
+      }
+    ]
+  }
+}

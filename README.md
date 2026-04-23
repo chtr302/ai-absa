@@ -51,4 +51,5 @@ ai-absa/
 ```
 
 ## Data Governance
-The project strictly adheres to Pydantic schemas to ensure data consistency across all modules. Detailed specifications can be found at: [docs/data_contract.md](docs/data_contract.md).
+The project strictly adheres to Pydantic schemas to ensure data consistency across all modules and data report. Detailed specifications can be found at: [docs/data_contract.md](docs/data_contract.md) & [docs/data_report.md](docs/data_report.md).
+

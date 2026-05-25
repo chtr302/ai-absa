@@ -58,8 +58,25 @@ Gợi ý 7 Aspect Categories sau. Có thể nghiên cứu thêm
 ---
 
 ## 5. Dataset Splits (Phân chia tệp tin)
-- `/data/processed/splits/test.jsonl`: 1,000 dòng (Gold Standard).
-- `/data/processed/splits/val.jsonl`: 1,000 dòng (Validation).
-- `/data/processed/splits/train.jsonl`: 20,000 dòng (Main training).
-- `/data/processed/splits/dashboard_pool.jsonl`: 153,988 dòng (Ứng dụng).
+- `/data/processed/balanced_30k.jsonl`: 30,000 dòng dữ liệu cho train/val/test (Sẽ có những dòng model không thể gán nhãn, nó là 1 phần của dataset).
+- `/data/processed/denoised_data.jsonl`: ~115,000 dòng dữ liệu xuất hiện các ký tự liên quan đến model AI, sẽ xuất hiện rác bởi vì đây là lọc vật lý.
 
+## 6. Explan Data (Các cột trong dữ liệu)
+```json
+{
+  "id": "comment_id_string",
+  "parent_context": "Text: Nội dung của câu cha hoặc tiêu đề thread",
+  "thread_title": "Text: Tiêu đề bài viết đã được làm sạch",
+  "sentences": [
+    {
+      "text": "Nội dung câu văn cụ thể",
+      "is_anchor": "boolean (Tự thân có thực thể hay không)",
+      "tech_score": "float (Độ đậm đặc kỹ thuật 0-10)",
+      "quads": []
+    }
+  ],
+  "detected_models": "Model xuất hiện (vật lý) trong câu",
+  "is_explicit": "Câu ngữ cảnh ẩn hay không",
+  "cleaned_models": "Kiểm tra vật lý đối với các loại data rác như Ollama bị nhận diện thành model Llama*"
+}
+```

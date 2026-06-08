@@ -37,20 +37,16 @@ SPLIT_DIR = ROOT_DIR / "data" / "processed" / "final_data" / "human_verification
 
 CATEGORY_OPTIONS = [
     "",
-    "BEHAVIOR",
     "PERFORMANCE",
-    "COMPARATIVE",
+    "INTELLIGENCE",
     "RESOURCES",
-    "TOOLING",
-    "CODING",
-    "KNOWLEDGE",
-    "QUANTIZATION",
-    "REASONING",
-    "FINETUNING",
-    "RAG_CONTEXT",
+    "BEHAVIOR",
+    "TECHNICAL",
+    "SOFTWARE",
+    "COMPARATIVE",
 ]
 
-SENTIMENT_OPTIONS = ["", "Positive", "Negative", "Neutral", "Mixed"]
+SENTIMENT_OPTIONS = ["", "Positive", "Negative", "Neutral"]
 EMPTY_QUAD = {"aspect": "", "category": "", "opinion": "", "sentiment": ""}
 
 

@@ -1,186 +1,179 @@
 import json
 import re
 import os
-import sys
+import spacy
+from tqdm import tqdm
 
 # --- Configuration ---
-# Using relative paths for better portability across different environments
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-INPUT_FILE = os.path.join(BASE_DIR, "data/raw/r_LocalLlama_comments.jsonl")
-OUTPUT_FILE = os.path.join(BASE_DIR, "data/processed/filtering_data.jsonl")
+INPUT_FILE = os.path.join(BASE_DIR, "data/processed/filtering_data.jsonl")
+SUBMISSIONS_FILE = os.path.join(BASE_DIR, "data/processed/new_data.json")
+OUTPUT_FILE = os.path.join(BASE_DIR, "data/processed/model_focused_data.jsonl")
 
-# Technical Keywords for Anchor Comments (Pass 1)
-# Used to identify comments that directly mention relevant technical entities
-ANCHOR_KEYWORDS = [
-    # Models
-    r"llama", r"qwen", r"gpt", r"claude", r"mistral", r"gemma", r"phi", r"yi", r"deepseek", r"grok", r"bert", r"roberta",
-    # Hardware
-    r"rtx", r"gpu", r"vram", r"3090", r"4090", r"nvidia", r"amd", r"cuda", r"rocm", r"tpu", r"npu", r"m1", r"m2", r"m3", r"m4",
-    # Tech terms
-    r"quantiz", r"gguf", r"exl2", r"awq", r"fine-tune", r"lora", r"qlora", r"inference", r"latency", r"t/s", r"token", r"context length",
-    r"rag", r"embedding", r"vllm", r"ollama", r"koboldcpp", r"text-generation-webui", r"local", r"self-host"
+# --- Regex Data ---
+MODEL_FAMILIES = [
+    r"llama(?:[- ]?[1234](?:\.[123])?)?(?:[- ]?(?:scout|maverick|behemoth|guard|chat|instruct|vision))?",
+    r"qwen(?:[- ]?[23](?:\.[56])?)?(?:[- ]?(?:coder|vl|plus|max|thinking|math|instruct))?",
+    r"deepseek(?:[- ]?(?:v[234]|r1|coder|ocr|speciale|terminus|instruct))?",
+    r"mistral(?:[- ]?(?:large|small|medium|nemo|instruct|creative))?",
+    r"mixtral(?:[- ]?(?:8x7b|8x22b|instruct))?",
+    r"ministral(?:[- ]?[3])?",
+    r"gemma(?:[- ]?[1234])?(?:[- ]?(?:it|instruct|vision))?",
+    r"gemini(?:[- ]?[123](?:\.[5])?)?(?:[- ]?(?:pro|flash|ultra|nano|preview))?",
+    r"phi(?:[- ]?[1234])?(?:[- ]?(?:mini|small|medium|multimodal|it|instruct))?",
+    r"gpt[- ]?[345](?:\.[1245])?(?:[- ]?(?:turbo|omni|o|mini|nano|pro|instant|oss))?",
+    r"claude(?:[- ]?[234](?:\.[157])?)?(?:[- ]?(?:sonnet|opus|haiku|mythos))?",
+    r"grok(?:[- ]?[1234])?(?:[- ]?(?:beta|mini|fast))?",
+    r"hermes(?:[- ]?[23])?", r"nous(?:[- ]?(?:hermes|llama|mixtral))?",
+    r"glm(?:[- ]?[45](?:\.[1567])?)?(?:[- ]?(?:air|ocr|instruct))?",
+    r"yi(?:[- ]?(?:1\.5|large|lightning|coder))?",
+    r"command[- ]?r(?:[- ]?plus)?",
+    r"vicuna", r"wizardlm", r"falcon(?:[- ]?(?:h1|h1r|2|3))?", r"mpt", r"starcoder",
+    r"nemotron(?:[- ]?(?:3|4|ultra|super|nano))?", r"jamba", r"dbrx", r"olmo(?:[- ]?[3])?",
+    r"exaone", r"kimi(?:[- ]?k[23])?", r"minimax", r"mimo(?:[- ]?v[2])?",
+    r"stable[- ]?lm", r"zephyr", r"biomistral", r"codestral", r"devstral", r"magistral"
+]
+PARAM_SIZES = [
+    r"\b[0-9]+(?:\.[0-9]+)?[bB]\b", r"\b[0-9]+x[0-9]+[bB]\b", r"\b[aA][0-9]+[bB]\b",
+    r"\bgguf\b", r"\bexl2\b", r"\bawq\b", r"\bgptq\b", r"\bfp8\b", r"\bfp16\b"
 ]
 
-# 7-Layer Schema Keywords for Technicality Score calculation
-SCHEMA_KEYWORDS = {
-    "model": [r"llama", r"qwen", r"gpt", r"claude", r"mistral", r"gemma", r"phi", r"yi", r"deepseek", r"grok"],
-    "hardware": [r"rtx", r"gpu", r"vram", r"3090", r"4090", r"nvidia", r"amd", r"cuda", r"rocm", r"tpu", r"npu", r"ram"],
-    "format": [r"gguf", r"exl2", r"awq", r"fp16", r"bf16", r"q4_k_m", r"q8_0"],
-    "software": [r"ollama", r"vllm", r"kobold", r"lm studio", r"text-generation-webui", r"pytorch", r"transformers"],
-    "performance": [r"t/s", r"tokens per second", r"latency", r"speed", r"fast", r"slow", r"throughput"],
-    "training": [r"lora", r"qlora", r"fine-tune", r"train", r"dataset", r"epoch", r"loss"],
-    "concept": [r"rag", r"agent", r"context", r"attention", r"quantization", r"embedding", r"prompt"]
-}
+# Compile patterns for performance
+COMBINED_PATTERN = re.compile(rf"(?i)({'|'.join(MODEL_FAMILIES + PARAM_SIZES)})")
 
-# Regex patterns for text denoising
-URL_PATTERN = re.compile(r'https?://\S+|www\.\S+')
-CODE_BLOCK_PATTERN = re.compile(r'```.*?```|`.*?`', re.DOTALL)
-TABLE_PATTERN = re.compile(r'\|.*\|.*\n(?:\|[-:| ]*\|.*\n)+', re.MULTILINE)
-MEME_PATTERNS = [
-    r"take my upvote", r"this is the way", r"underrated comment", r"came here to say this",
-    r"faith in humanity restored", r"instructions unclear", r"banana for scale"
-]
-BOT_AUTHORS = {"AutoModerator", "RemindMeBot", "CommonMisspellingBot", "WikiSummarizerBot"}
+# Load Spacy for sentence splitting
+try:
+    nlp = spacy.load("en_core_web_sm", disable=["ner", "tagger", "lemmatizer"])
+    nlp.add_pipe("sentencizer")
+except Exception:
+    # Fallback to a simple sentencizer if the model is not available
+    nlp = spacy.blank("en")
+    nlp.add_pipe("sentencizer")
 
-def clean_text(text):
-    """
-    Performs surgical denoising of Reddit text while preserving technical markers.
-    """
-    if not text: return ""
-    # Remove code blocks and tables to reduce noise
-    text = CODE_BLOCK_PATTERN.sub('', text)
-    text = TABLE_PATTERN.sub('', text)
-    # Remove URLs
-    text = URL_PATTERN.sub('', text)
-    # Convert Markdown links to plain text: [text](url) -> text
-    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
-    # Remove common Reddit memes
-    for meme in MEME_PATTERNS:
-        text = re.sub(rf"(?i)\b{meme}\b", "", text)
-    # Standardize whitespace
-    text = " ".join(text.split())
-    return text
+def extract_models(text):
+    """Extracts model entities from text using regex."""
+    if not text:
+        return []
+    matches = COMBINED_PATTERN.findall(text)
+    # Deduplicate and normalize (lowercase)
+    return sorted(list(set(m.strip().lower() for m in matches if m.strip())))
 
-def is_deleted(data):
-    """
-    Checks if a comment is deleted, removed, or generated by a known bot.
-    """
-    body = data.get("body", "")
-    author = data.get("author", "")
-    return body in {"[deleted]", "[removed]"} or author in BOT_AUTHORS or author.endswith("Bot")
-
-def get_technicality_score(text_lower):
-    """
-    Calculates technicality score based on the 7-layer schema coverage.
-    """
-    score = 0
-    for category, keywords in SCHEMA_KEYWORDS.items():
-        found = sum(1 for k in keywords if re.search(rf"\b{re.escape(k)}\b", text_lower))
-        if found > 0:
-            score += 1 # Count distinct technical layers present
-    return score
+def get_thread_title_from_permalink(permalink):
+    """Extracts a readable title from the Reddit permalink slug if needed."""
+    try:
+        parts = permalink.split('/')
+        if len(parts) >= 6:
+            slug = parts[5]
+            title = slug.replace('_', ' ').replace('-', ' ').capitalize()
+            return title
+    except Exception:
+        pass
+    return "Unknown Thread"
 
 def main():
-    print(f"Initializing Industrial Filter for {INPUT_FILE}...")
-    
-    anchor_ids = set()
-    total_lines = 0
-    
-    # Pass 1: Identification of Explicit Technical Entities
-    print(f"Pass 1: Identifying Anchor Comments...")
-    anchor_regex = re.compile(rf"(?i)\b({'|'.join(ANCHOR_KEYWORDS)})\b")
-    
-    if not os.path.exists(INPUT_FILE):
-        print(f"Error: Input file {INPUT_FILE} not found.")
-        return
+    print(f"Loading submission titles from {SUBMISSIONS_FILE}...")
+    thread_map = {}
+    if os.path.exists(SUBMISSIONS_FILE):
+        with open(SUBMISSIONS_FILE, 'r', encoding='utf-8') as f:
+            try:
+                submissions = json.load(f)
+                for sub in submissions:
+                    thread_map[sub['id']] = sub['title']
+            except Exception as e:
+                print(f"Warning: Could not parse submissions file: {e}")
 
+    # Pass 1: Build comment lookup to resolve parent_context
+    print(f"Pass 1: Building comment lookup from {INPUT_FILE}...")
+    comment_lookup = {}
+    input_line_count = 0
     with open(INPUT_FILE, 'r', encoding='utf-8') as f:
         for line in f:
-            total_lines += 1
+            input_line_count += 1
             try:
                 data = json.loads(line)
-            except: continue
-            
-            if is_deleted(data): continue
-            
-            body = data.get("body", "").lower()
-            if anchor_regex.search(body):
-                anchor_ids.add(data.get("id"))
-            
-            if total_lines % 100000 == 0:
-                print(f"   Scanned {total_lines:,} lines... Found {len(anchor_ids):,} anchors.")
-
-    print(f"Pass 1 Complete. Found {len(anchor_ids):,} anchor comments.")
-
-    # Pass 2: Ancestry-Aware Filtering and Quality Control
-    print(f"Pass 2: Processing and Denoising...")
-    saved_count = 0
-    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+                comment_lookup[data['id']] = data['body']
+            except Exception:
+                continue
+    
+    # Pass 2: Process and Filter
+    print(f"Pass 2: Filtering and transforming data (95k target)...")
+    retained_comments = 0
+    total_sentences_kept = 0
     
     with open(INPUT_FILE, 'r', encoding='utf-8') as f_in, \
          open(OUTPUT_FILE, 'w', encoding='utf-8') as f_out:
         
-        for idx, line in enumerate(f_in):
+        for line in tqdm(f_in, total=input_line_count):
             try:
                 data = json.loads(line)
-            except: continue
+            except Exception:
+                continue
             
-            comment_id = data.get("id")
-            parent_id = data.get("parent_id", "")
-            # reddit parent_id format is t1_ID or t3_ID.
+            comment_id = data['id']
+            parent_id = data['parent_id']
+            body = data['body']
+            permalink = data.get('permalink', '')
+            
+            # Resolve thread title
+            thread_id = ""
+            if '/comments/' in permalink:
+                # Format: /r/Subreddit/comments/thread_id/slug/comment_id/
+                parts = permalink.split('/comments/')
+                if len(parts) > 1:
+                    thread_id = parts[1].split('/')[0]
+            
+            thread_title = thread_map.get(thread_id, get_thread_title_from_permalink(permalink))
+            
+            # Resolve parent context
+            parent_body = ""
             clean_parent_id = parent_id.split('_')[-1] if '_' in parent_id else parent_id
+            if clean_parent_id in comment_lookup:
+                parent_body = comment_lookup[clean_parent_id]
             
-            # Implementation of Ancestry-Aware Logic
-            is_anchor = comment_id in anchor_ids
-            is_child_of_anchor = clean_parent_id in anchor_ids
+            # Identify models in context (Implicit Aspect sources)
+            context_models = list(set(extract_models(thread_title) + extract_models(parent_body)))
             
-            if not (is_anchor or is_child_of_anchor):
-                continue
+            # Process sentences
+            doc = nlp(body)
+            comment_sentences = []
+            
+            for sent in doc.sents:
+                sent_text = sent.text.strip()
+                if not sent_text:
+                    continue
                 
-            if is_deleted(data): continue
-            
-            # Cleaning and quality thresholds
-            raw_body = data.get("body", "")
-            cleaned_body = clean_text(raw_body)
-            words = cleaned_body.split()
-            word_count = len(words)
-            
-            # Goldilocks Zone for word count (10 to 80 words)
-            if not (10 <= word_count <= 80):
-                continue
+                # Detect models in sentence
+                sent_models = extract_models(sent_text)
                 
-            text_lower = cleaned_body.lower()
-            tech_score = get_technicality_score(text_lower)
+                # Sentence is "model-focused" if it has its own models OR if context has models
+                if sent_models or context_models:
+                    # Union of models for detected_models list
+                    all_detected = sorted(list(set(sent_models + context_models)))
+                    
+                    sent_obj = {
+                        "text": sent_text,
+                        "detected_models": all_detected,
+                        "is_explicit": len(sent_models) > 0
+                    }
+                    comment_sentences.append(sent_obj)
+                    total_sentences_kept += 1
             
-            # Ensure technical relevance
-            if tech_score == 0 and not is_child_of_anchor:
-                continue
-                
-            data_elite = {
-                "id": comment_id,
-                "parent_id": parent_id,
-                "body": cleaned_body,
-                "word_count": word_count,
-                "technicality_score": tech_score,
-                "is_anchor": is_anchor,
-                "score": data.get("score", 0),
-                "created_utc": data.get("created_utc"),
-                "permalink": data.get("permalink")
-            }
-            
-            f_out.write(json.dumps(data_elite) + '\n')
-            saved_count += 1
-            
-            if (idx + 1) % 100000 == 0:
-                print(f"   Processed {idx+1:,} lines... Saved {saved_count:,} elite comments.")
+            # If the comment has any focused sentences, save it
+            if comment_sentences:
+                output_obj = {
+                    "id": comment_id,
+                    "parent_context": parent_body,
+                    "thread_title": thread_title,
+                    "sentences": comment_sentences
+                }
+                f_out.write(json.dumps(output_obj) + '\n')
+                retained_comments += 1
 
-    print(f"\nSTATISTICAL SUMMARY")
-    print(f"----------------------")
-    print(f"Total Lines Processed: {total_lines:,}")
-    print(f"Anchor Comments:       {len(anchor_ids):,}")
-    print(f"Total Elite Saved:     {saved_count:,}")
-    print(f"Retention Rate:        {(saved_count/total_lines)*100:.2f}%")
-    print(f"Output Path:           {OUTPUT_FILE}")
+    print(f"\n--- FILTERING SUMMARY REPORT ---")
+    print(f"Total Input Lines:   {input_line_count:,}")
+    print(f"Retained Comments:   {retained_comments:,}")
+    print(f"Total Sentences Kept: {total_sentences_kept:,}")
+    print(f"Output saved to:     {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()

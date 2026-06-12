@@ -591,7 +591,16 @@ with list_col:
         key=f"row_table_{selected_name}",
     )
     try:
-        selected_rows = event.selection.rows
+        table_selection_key = f"row_table_selection::{selected_name}"
+        if table_selection_key not in st.session_state:
+            st.session_state[table_selection_key] = tuple()
+
+        selected_rows = tuple(event.selection.rows)
+        if selected_rows != st.session_state[table_selection_key]:
+            st.session_state[table_selection_key] = selected_rows
+        else:
+            selected_rows = tuple()
+
         if selected_rows:
             chosen = int(selected_rows[0])
             if chosen != idx:

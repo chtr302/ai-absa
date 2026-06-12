@@ -7,7 +7,20 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='leaderboard.css') }}">
   </head>
   <body>
-    <div class="app-shell">
+    <div class="container">
+      <div class="terminal-frame">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+          <div class="dots-group">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="terminal-title">chtrn302@haulamai.click: ~/ai-absa</span>
+        </div>
+        <!-- Terminal Body -->
+        <div class="terminal-body">
+          <div class="app-shell">
       <header class="top-shell">
         <section class="project-overview" aria-labelledby="projectTitle">
           <div class="overview-copy">
@@ -303,7 +316,10 @@
           </div>
         </section>
       </main>
+      </div>
     </div>
+  </div>
+</div>
 
     <script src="{{ url_for('static', filename='leaderboard.js') }}"></script>
   </body>

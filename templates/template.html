@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trần Công Hậu | OCR</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    
+    <!-- IBM Plex Mono fallback -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #201d1d;
+            --bg-card: #302c2c;
+            --bg-sidebar: #282424;
+            --border-color: #646262;
+            --border-hover: rgba(255, 255, 255, 0.25);
+            --border-warm: rgba(15, 0, 0, 0.12);
+            
+            --accent-blue: #007aff;
+            --accent-blue-glow: rgba(0, 122, 255, 0.15);
+            --accent-cyan: #00d4ff;
+            --accent-orange: #ffaa00;
+            
+            --success: #30d158;
+            --success-glow: rgba(48, 209, 88, 0.15);
+            --danger: #ff3b30;
+            --danger-glow: rgba(255, 59, 48, 0.15);
+            --warn: #ff9f0a;
+            --warn-glow: rgba(255, 159, 10, 0.15);
+            
+            --text-primary: #fdfcfc;
+            --text-secondary: #9a9898;
+            --text-muted: #6e6e73;
+            
+            --font-mono: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, 'SFMono-Regular',
+                         Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            --font-sans: var(--font-mono);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            min-height: 100vh;
+            line-height: 1.5;
+            padding: 10px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Terminal Window Frame */
+        .terminal-frame {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+        }
+
+        .terminal-header {
+            background-color: #1a1818;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-warm);
+            flex-shrink: 0;
+            gap: 8px;
+        }
+
+        .dots-group {
+            display: flex;
+            gap: 6px;
+            margin-right: 10px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red    { background: var(--danger); }
+        .dot-yellow { background: var(--warn); }
+        .dot-green  { background: var(--success); }
+
+        .terminal-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .terminal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* App Header inside terminal */
+        .app-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid var(--border-warm);
+            padding-bottom: 16px;
+        }
+
+        .app-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+
+
+        /* Domain Selector */
+        .domain-selector {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .domain-selector button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .domain-selector button.active {
+            background-color: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
+        }
+
+        /* Top-level Page Navigation */
+        .page-nav {
+            display: flex;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .page-nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-nav-btn:hover {
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.04);
+        }
+
+        .page-nav-btn.active {
+            background: rgba(255,255,255,0.07);
+            color: var(--text-primary);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+        }
+
+        /* Hardware Specs full-page layout */
+        .specs-page {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 24px;
+        }
+
+        .specs-page-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .specs-page-inner { grid-template-columns: 1fr; }
+        }
+
+        .specs-page-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .specs-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .specs-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Main Grid Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+            }
+            .terminal-body {
+                overflow: visible;
+            }
+        }
+
+        /* Left: Interaction Area */
+        .interaction-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        /* Upload Controls Container */
+        .controls-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .controls-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-zone {
+            border: 1.5px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.02);
+            box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.02);
+        }
+
+        .upload-zone svg {
+            color: var(--text-secondary);
+            transition: color 0.25s;
+        }
+
+        .upload-zone:hover svg {
+            color: var(--accent-blue);
+        }
+
+        .url-input-container {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .url-input-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        textarea.url-textarea {
+            width: 100%;
+            height: 42px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea.url-textarea:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            padding: 0 18px;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Batch Grid results container */
+        .batch-results-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.15);
+            padding: 16px;
+            min-height: 400px;
+        }
+
+        .batch-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .category-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .category-title-icon {
+            font-size: 8px;
+            margin-right: 4px;
+        }
+
+        .category-title-text {
+            font-weight: 700;
+        }
+
+        .category-count {
+            color: var(--text-secondary);
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        /* Card styles */
+        .result-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .result-card.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px var(--accent-blue), 0 8px 30px var(--accent-blue-glow);
+        }
+
+        /* Card Header details */
+        .card-header {
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background-color: var(--success-glow);
+            color: var(--success);
+            border: 1px solid rgba(48, 209, 88, 0.2);
+        }
+
+        .badge-warn {
+            background-color: var(--warn-glow);
+            color: var(--warn);
+            border: 1px solid rgba(255, 159, 10, 0.2);
+        }
+
+        .badge-danger {
+            background-color: var(--danger-glow);
+            color: var(--danger);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        /* Card Media area */
+        .card-canvas-wrapper {
+            position: relative;
+            background: #000;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: zoom-in;
+        }
+
+        .card-canvas-wrapper::after {
+            content: '🔍 CLICK TO ZOOM';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            backdrop-filter: blur(1px);
+        }
+
+        .card-canvas-wrapper:hover::after {
+            opacity: 1;
+        }
+
+        .card-canvas-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Card Footer details */
+        .card-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: rgba(0,0,0,0.1);
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .card-footer-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .card-footer-value {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .card-footer-error {
+            font-size: 11px;
+            color: var(--danger);
+        }
+
+        /* Right: Results Sidebar */
+        .sidebar {
+            background-color: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        @media (min-width: 1201px) {
+            .sidebar {
+                max-height: calc(100vh - 180px);
+            }
+        }
+
+        .sidebar-title-group {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-family: var(--font-mono);
+        }
+
+        /* Sidebar Tabs styling */
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-top: 10px;
+            gap: 4px;
+        }
+
+        .sidebar-tab-btn {
+            background: none;
+            border: 1px solid transparent;
+            border-bottom: none;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 6px 10px;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            margin-bottom: -1px;
+        }
+
+        .sidebar-tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .sidebar-tab-btn.active {
+            color: var(--accent-cyan);
+            border-color: var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: bold;
+        }
+
+        /* ── Hardware Specs Panel ─────────────────────────────────────── */
+        .specs-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        .specs-section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .specs-tier-badge {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 3px;
+        }
+
+        .tier-onprem  { background: rgba(0,212,255,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,212,255,0.25); }
+        .tier-cloud   { background: rgba(255,170,0,0.12);  color: var(--accent-orange); border: 1px solid rgba(255,170,0,0.25); }
+        .tier-current { background: rgba(255,255,255,0.06); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+        .specs-section-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .specs-group {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .specs-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            gap: 8px;
+        }
+
+        .specs-row:last-of-type { border-bottom: none; }
+
+        .specs-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        .specs-label small {
+            display: block;
+            font-size: 9px;
+            color: #ffffff;
+            margin-top: 1px;
+        }
+
+        .specs-value {
+            font-size: 11px;
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .specs-value.price { color: var(--accent-cyan); }
+        .specs-value.warn  { color: var(--warn); }
+        .specs-value.ok    { color: var(--success); }
+        .specs-value.dim   { color: var(--text-muted); }
+
+        .specs-divider {
+            border: none;
+            border-top: 1px dashed rgba(255,255,255,0.08);
+            margin: 4px 0;
+        }
+
+        .specs-total-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 8px 0 2px;
+            gap: 8px;
+        }
+
+        .specs-total-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .specs-total-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--success);
+            text-align: right;
+        }
+
+        .specs-note {
+            font-size: 9.5px;
+            color: #1ec06a;
+            line-height: 1.5;
+            margin-top: 8px;
+            font-style: italic;
+            border-top: 1px dashed rgba(255,255,255,0.05);
+            padding-top: 8px;
+        }
+
+        .specs-note a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            opacity: 0.7;
+        }
+
+        .specs-roi-box {
+            background: rgba(48,209,88,0.06);
+            border: 1px solid rgba(48,209,88,0.2);
+            border-radius: 6px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .specs-roi-title {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--success);
+            margin-bottom: 2px;
+        }
+
+        .specs-roi-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .specs-roi-row span:last-child {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Detail display containers */
+        .detail-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-header h3 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .detail-prediction {
+            font-size: 32px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            line-height: 1.1;
+            letter-spacing: 0.5px;
+            word-break: break-all;
+            margin: 8px 0;
+            text-align: center;
+        }
+
+        .container-parts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .part-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .part-box-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .part-box-value {
+            font-size: 16px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Detailed Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        table.debug-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            text-align: left;
+        }
+
+        table.debug-table th {
+            background: rgba(0,0,0,0.4);
+            color: var(--text-secondary);
+            padding: 6px 8px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table.debug-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-primary);
+        }
+
+        table.debug-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* TTA logs */
+        .tta-box {
+            background: rgba(255, 159, 10, 0.04);
+            border: 1px solid rgba(255, 159, 10, 0.15);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        .tta-title {
+            color: var(--warn);
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tta-body {
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Controls block in sidebar */
+        .sidebar-controls {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ctrl-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ctrl-group label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .ctrl-group input {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            outline: none;
+        }
+
+        .ctrl-group input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        footer {
+            padding: 24px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        /* Loader */
+        .pulse-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 100px;
+        }
+
+        .pulse-bubble {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-blue);
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+
+        .pulse-bubble-1 { animation-delay: -0.32s; }
+        .pulse-bubble-2 { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 350px;
+            color: var(--text-muted);
+            gap: 12px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state svg {
+            color: rgba(255,255,255,0.05);
+        }
+
+        /* Help Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 95%;
+            max-width: 600px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .help-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+            margin-left: 12px;
+        }
+
+        .help-btn:hover {
+            background: var(--accent-blue-glow);
+            border-color: var(--accent-blue);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-blue-glow);
+        }
+
+        .card-canvas-wrapper:hover .canvas-hover-overlay {
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="terminal-frame">
+            <!-- Terminal Header -->
+            <div class="terminal-header">
+                <div class="dots-group">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <span class="terminal-title">chtrn302@haulamai.click: ~/ocr</span>
+            </div>
+
+            <!-- Terminal Body -->
+            <div class="terminal-body">
+                <header class="app-header">
+                    <div class="app-title-group" style="display: flex; align-items: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="9" y1="3" x2="9" y2="21"/>
+                            <line x1="15" y1="3" x2="15" y2="21"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="3" y1="15" x2="21" y2="15"/>
+                        </svg>
+                        <h1 class="app-title">PAP_OCR_DEMO</h1>
+                        <button class="help-btn" onclick="showHelpModal()" title="Hướng dẫn sử dụng">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Top-level Page Navigation -->
+                    <nav class="page-nav" id="page-nav">
+                        <button class="page-nav-btn active" id="page-btn-ocr" onclick="switchPage('ocr')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+                            OCR Engine
+                        </button>
+                        <button class="page-nav-btn" id="page-btn-specs" onclick="switchPage('specs')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            Hardware Specs
+                        </button>
+                    </nav>
+                </header>
+
+                <!-- ═══ PAGE: OCR Engine ═══ -->
+                <div id="page-ocr" style="display:contents;">
+                <main class="main-layout">
+                    <!-- Left: Interaction & Batch Grid -->
+                    <section class="interaction-area">
+                        <!-- Upload Controls -->
+                        <div class="controls-container">
+                            <div id="drop-zone" class="upload-zone">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">DRAG & DROP IMAGES OR CLICK</span>
+                                <span style="font-size:11px; color:var(--text-muted);">Supports batch selection & ZIP archives</span>
+                                <input type="file" id="file-input" hidden accept="image/*,application/zip,application/x-zip-compressed" multiple>
+                            </div>
+
+                            <div class="url-input-container" style="display: flex; flex-direction: column; gap: 6px; justify-content: center; font-size: 11px; line-height: 1.4;">
+                                <span class="url-input-title" style="color: var(--accent-cyan);">SMART ROUTING INFO</span>
+                                <p style="color: var(--text-secondary); margin-top: 2px;">
+                                    Tự động định tuyến theo prefix tên tệp tin:
+                                </p>
+                                <ul style="margin-left: 16px; margin-top: 2px; color: var(--text-muted); list-style-type: square; display: flex; flex-direction: column; gap: 2px;">
+                                    <li>Bắt đầu bằng <span style="color: var(--success); font-weight: bold;">lp / bienso</span>: Biển số xe.</li>
+                                    <li>Bắt đầu bằng <span style="color: var(--accent-orange); font-weight: bold;">noc / aerial / top / camnoc</span>: Container nóc.</li>
+                                    <li>Khác hoặc không khớp: Container hông (mặc định).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Results Grid Area -->
+                        <div class="batch-results-wrapper">
+                            <div id="grid-loading" style="display:none;">
+                                <div class="pulse-loader">
+                                    <div class="pulse-bubble pulse-bubble-1"></div>
+                                    <div class="pulse-bubble pulse-bubble-2"></div>
+                                    <div class="pulse-bubble"></div>
+                                </div>
+                                <p style="text-align:center; font-size:12px; color:var(--text-muted);">Running neural networks & validation consensus...</p>
+                            </div>
+
+                            <div id="empty-grid-state" class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                                    <path d="M12 12v9"/>
+                                    <path d="m8 17 4 4 4-4"/>
+                                </svg>
+                                <span>No images processed. Upload files or enter URLs above to execute pipeline.</span>
+                            </div>
+
+                            <div id="batch-grid" style="display:none; display: flex; flex-direction: column; gap: 24px;"></div>
+                        </div>
+                    </section>
+
+                    <aside class="sidebar">
+                        <div class="sidebar-title-group">
+                            <h2 class="sidebar-title" id="sidebar-main-title">Kết quả tổng hợp</h2>
+                            <div class="sidebar-subtitle" id="sidebar-sub-title">Session: Auto-Grouped</div>
+                        </div>
+
+                        <!-- Parameters and Controls (Always visible at the top) -->
+                        <div class="sidebar-controls">
+                            <div id="prefix-controls-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                                <div class="ctrl-group">
+                                    <label>LP PREFIXES</label>
+                                    <input id="ctrl-lp-prefixes" type="text" value="lp, bienso" placeholder="e.g. lp, bienso">
+                                </div>
+                                <div class="ctrl-group">
+                                    <label>TOP PREFIXES</label>
+                                    <input id="ctrl-top-prefixes" type="text" value="noc, aerial, camnoc, top" placeholder="e.g. noc, top">
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="ctrl-group" id="ctrl-conf-lp-wrapper">
+                                    <label>LP DET CONF</label>
+                                    <input id="ctrl-conf-lp" type="number" min="0.05" max="0.95" step="0.05" value="0.25">
+                                </div>
+                                <div class="ctrl-group" id="ctrl-conf-container-wrapper">
+                                    <label>CONT DET CONF</label>
+                                    <input id="ctrl-conf-container" type="number" min="0.05" max="0.95" step="0.05" value="0.50">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 10px;" id="ctrl-vote-and-aerial-row">
+                                <div class="ctrl-group" id="ctrl-vote-wrapper">
+                                    <label>TTA VOTES ≥</label>
+                                    <input id="ctrl-vote" type="number" min="1" max="10" step="1" value="5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Tabs -->
+                        <div class="sidebar-tabs">
+                            <button class="sidebar-tab-btn active" id="tab-btn-vehicle" onclick="switchSidebarTab('vehicle')">Tổng hợp</button>
+                            <button class="sidebar-tab-btn" id="tab-btn-inference" onclick="switchSidebarTab('inference')">Chi tiết ảnh</button>
+                        </div>
+
+                        <!-- Tab Content 1: Vehicle Consolidated Report -->
+                        <div id="sidebar-tab-vehicle-content" style="display: flex; flex-direction: column; gap: 16px;">
+                            <div id="vehicle-report-content" style="display: flex; flex-direction: column; gap: 16px;">
+                                <!-- Dynamic content -->
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--text-muted);">
+                                    <span>Chưa có tệp tin nào được xử lý.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content 2: Inference Content (original sidebar content) -->
+                        <div id="sidebar-tab-inference-content" style="display: none; flex-direction: column; gap: 16px;">
+                            <!-- Info display -->
+                            <div id="detail-display-pane" style="display:none;">
+                                <div class="detail-card">
+                                    <div class="detail-header">
+                                        <h3 id="detail-type-badge">CONTAINER ID</h3>
+                                        <span id="detail-status-badge" class="badge">SUCCESS</span>
+                                    </div>
+                                    <div class="detail-prediction" id="detail-prediction-text">
+                                        MSKU1804225
+                                    </div>
+                                    
+                                    <!-- Part Breakdown for Containers -->
+                                    <div id="container-parts-block" class="container-parts-grid">
+                                        <div class="part-box">
+                                            <div class="part-box-label">Owner</div>
+                                            <div class="part-box-value" id="part-owner">MSKU</div>
+                                        </div>
+                                        <div class="part-box">
+                                            <div class="part-box-label">Serial</div>
+                                            <div class="part-box-value" id="part-serial">180422</div>
+                                        </div>
+                                        <div class="part-box">
+                                            <div class="part-box-label">Size/Type</div>
+                                            <div class="part-box-value" id="part-sizetype" style="color:var(--accent-blue);">45G1</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Metadata Rows -->
+                                    <div class="metric-row">
+                                        <span class="metric-label">ISO 6346 Check</span>
+                                        <span class="metric-value" id="metric-iso-valid">VALID</span>
+                                    </div>
+                                    <div class="metric-row" id="metric-layout-row">
+                                        <span class="metric-label">Bbox Layout</span>
+                                        <span class="metric-value" id="metric-layout">HORIZONTAL</span>
+                                    </div>
+                                    <div class="metric-row" id="metric-confidence-row">
+                                        <span class="metric-label">Avg Confidence</span>
+                                        <span class="metric-value" id="metric-confidence">98.5%</span>
+                                    </div>
+                                    <div class="metric-row" id="metric-reason-row">
+                                        <span class="metric-label">Decision Status</span>
+                                        <span class="metric-value" id="metric-reason" style="font-size:11px;">MOD11_PASS</span>
+                                    </div>
+                                </div>
+
+                                <!-- Detailed Debug Table -->
+                                <div class="sidebar-title" style="margin-top: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">Pipeline Internals</div>
+                                <div class="table-wrapper" id="debug-table-container">
+                                    <!-- Generated Dynamically -->
+                                </div>
+
+                                <!-- TTA Consensus Box -->
+                                <div class="tta-box" id="tta-consensus-block" style="display:none; margin-top: 10px;">
+                                    <div class="tta-title">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                        </svg>
+                                        TTA consensus logs
+                                    </div>
+                                    <div class="tta-body" id="tta-consensus-body">
+                                        <!-- Dynamic -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sidebar Idle state -->
+                            <div id="sidebar-idle-pane" class="empty-state" style="height:250px;">
+                                <span style="font-size:12px;">Select any card in the results grid to inspect neural parameters, bounding boxes, and consensus outputs.</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                            <span id="batch-latency-label" class="muted" style="font-size:11px; font-family:var(--font-mono);"></span>
+                        </div>
+                    </aside>
+                </main>
+                </div><!-- /#page-ocr -->
+
+                <!-- ═══ PAGE: Hardware Specs ═══ -->
+                <div id="page-specs" style="display:none; flex:1; overflow:hidden;">
+                    <div class="specs-page">
+
+                        <div class="specs-page-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            Cấu hình phần cứng đề xuất
+                            <span style="font-size:10px; font-weight:400; color:var(--text-muted); letter-spacing:0; text-transform:none; margin-left:6px;">On-Premise · Enterprise Grade · 24/7 Port Environment</span>
+                        </div>
+
+                        <div class="specs-page-inner">
+
+                            <!-- Card 1: Running Node -->
+                            <div class="specs-card">
+                                <div class="specs-card-header">
+                                    <span class="specs-tier-badge tier-current">RUNNING NODE</span>
+                                    <span style="font-size:11px; color:var(--text-muted);">Cấu hình đang vận hành</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">Operating System<small>Hệ điều hành</small></span>
+                                    <span class="specs-value dim" id="current-os">--</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">Architecture<small>Kiến trúc vi xử lý</small></span>
+                                    <span class="specs-value dim" id="current-arch">--</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">CPU Logical Cores<small>Luồng xử lý logic</small></span>
+                                    <span class="specs-value dim" id="current-cores">--</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">Physical Memory (RAM)<small>Bộ nhớ vật lý</small></span>
+                                    <span class="specs-value dim" id="current-ram">--</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">ONNX Execution Provider<small>Thiết bị tăng tốc AI</small></span>
+                                    <span class="specs-value" style="color:var(--warn);" id="current-provider">CPU Only</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: On-Premise Enterprise Build -->
+                            <div class="specs-card">
+                                <div class="specs-card-header">
+                                    <span class="specs-tier-badge tier-onprem">ON-PREMISE</span>
+                                    <span style="font-size:11px; color:var(--text-muted);">Đề xuất</span>
+                                </div>
+
+                                <!-- Column headers -->
+                                <div class="specs-row" style="padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <span class="specs-label" style="color:var(--text-secondary); font-weight:700;">Linh kiện</span>
+                                    <span class="specs-value" style="color:var(--text-secondary); font-weight:700;">Giá tham khảo</span>
+                                </div>
+
+                                <div class="specs-row">
+                                    <span class="specs-label">NVIDIA Tesla T4<small>16GB VRAM · Passive Cooling · PCIe</small></span>
+                                    <span class="specs-value price">26.000.000đ</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">Intel Xeon Silver 4309Y<small>8C/16T · 2.8GHz · LGA4189</small></span>
+                                    <span class="specs-value price">5.000.000đ</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">RAM 16GB DDR4 ECC Registered<small>3200MHz · RDIMM · Server Grade</small></span>
+                                    <span class="specs-value price">5.076.000đ</span>
+                                </div>
+                                <div class="specs-row">
+                                    <span class="specs-label">Samsung PM893a 480GB SSD<small>SATA III · Enterprise · 1.3 DWPD</small></span>
+                                    <span class="specs-value price">3.780.000đ</span>
+                                </div>
+
+                                <hr class="specs-divider" style="margin:12px 0;">
+
+                                <div class="specs-total-row">
+                                    <span class="specs-total-label">Tổng linh kiện (T4 Mới)</span>
+                                    <span class="specs-total-value">39.856.000đ</span>
+                                </div>
+
+                                <div class="specs-note">
+                                    Nguồn tham khảo: Máy chủ VINA<br></br>
+                                    <span style="color:#cb1b1b;">* Chưa tính chassis rack, mainboard, nguồn, networking, UPS, cài đặt.</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div><!-- /#page-specs -->
+            </div>
+        </div>
+
+        <footer>&copy; Trần Công Hậu &copy;</footer>
+    </div>
+
+<script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    let currentDomain = 'smart';
+    let batchResults = [];
+    let selectedIndex = -1;
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const batchGrid = document.getElementById('batch-grid');
+    const gridLoading = document.getElementById('grid-loading');
+    const emptyGridState = document.getElementById('empty-grid-state');
+    
+    const sidebarIdlePane = document.getElementById('sidebar-idle-pane');
+    const detailDisplayPane = document.getElementById('detail-display-pane');
+    const sidebarSubTitle = document.getElementById('sidebar-sub-title');
+    const batchLatencyLabel = document.getElementById('batch-latency-label');
+
+    // ── Upload Handlers ────────────────────────────────────────────────────────
+    dropZone.onclick = () => fileInput.click();
+
+    dropZone.ondragover = e => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--accent-blue)';
+        dropZone.style.background = 'rgba(0,122,255,0.04)';
+    };
+
+    dropZone.ondragleave = () => {
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background = 'transparent';
+    };
+
+    dropZone.ondrop = e => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background = 'transparent';
+        if (e.dataTransfer.files.length) {
+            handleFiles(Array.from(e.dataTransfer.files));
+        }
+    };
+
+    fileInput.onchange = e => {
+        if (e.target.files.length) {
+            handleFiles(Array.from(e.target.files));
+        }
+    };
+
+    // ── submit multiple files ──────────────────────────────────────────────────
+    async function handleFiles(files) {
+        if (files.length === 0) return;
+
+        setLoading(true);
+        const confLp = document.getElementById('ctrl-conf-lp').value;
+        const confContainer = document.getElementById('ctrl-conf-container').value;
+        const vote_thr = document.getElementById('ctrl-vote').value;
+        const lpPrefixes = document.getElementById('ctrl-lp-prefixes').value;
+        const topPrefixes = document.getElementById('ctrl-top-prefixes').value;
+
+        try {
+            const fd = new FormData();
+            files.forEach(f => fd.append('files', f));
+
+            const url = '/predict/files';
+            fd.append('lp_prefixes', lpPrefixes);
+            fd.append('top_prefixes', topPrefixes);
+            fd.append('conf_lp', confLp);
+            fd.append('conf_container', confContainer);
+            fd.append('vote_thr', vote_thr);
+
+            const resp = await fetch(url, { method: 'POST', body: fd });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            
+            batchResults = data.results || [];
+            batchLatencyLabel.innerText = `BATCH LATENCY: ${data.latency_ms}ms`;
+            
+            // Check for config overrides from ZIP prefix.txt
+            if (data.config_overrides) {
+                if (data.config_overrides.lp_prefixes) {
+                    document.getElementById('ctrl-lp-prefixes').value = data.config_overrides.lp_prefixes;
+                    localStorage.setItem('lp_prefixes', data.config_overrides.lp_prefixes);
+                }
+                if (data.config_overrides.top_prefixes) {
+                    document.getElementById('ctrl-top-prefixes').value = data.config_overrides.top_prefixes;
+                    localStorage.setItem('top_prefixes', data.config_overrides.top_prefixes);
+                }
+            }
+
+            if (batchResults.length > 0) {
+                selectedIndex = 0;
+            } else {
+                selectedIndex = -1;
+            }
+
+            renderGrid();
+            updateSidebar();
+            generateVehicleReport(batchResults);
+        } catch (err) {
+            alert(`Error running batch inference: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function setLoading(on) {
+        if (on) {
+            gridLoading.style.display = 'block';
+            emptyGridState.style.display = 'none';
+            batchGrid.style.display = 'none';
+        } else {
+            gridLoading.style.display = 'none';
+        }
+    }
+
+    // ── Grid Rendering ─────────────────────────────────────────────────────────
+    function renderGrid() {
+        batchGrid.innerHTML = '';
+        if (batchResults.length === 0) {
+            emptyGridState.style.display = 'flex';
+            batchGrid.style.display = 'none';
+            return;
+        }
+
+        emptyGridState.style.display = 'none';
+        batchGrid.style.display = 'flex';
+
+        // Categorize items
+        const lpTractorItems = [];
+        const lpTrailerItems = [];
+        const aerialItems = [];
+        const containerHorizItems = [];
+        const containerVertItems = [];
+        const otherItems = [];
+
+        batchResults.forEach((item, index) => {
+            const domainTag = item.domain || (currentDomain === 'lp' ? 'LP' : (currentDomain === 'container' ? 'CONTAINER' : 'UNKNOWN'));
+            const entry = { item, index, domainTag };
+            if (domainTag === 'LP') {
+                const fn = (item.filename || '').toLowerCase();
+                const idResults = (item.results || []).filter(r => r.type === 'PLATE');
+                let isTrailer = fn.includes('trailer') || fn.includes('romooc') || fn.includes('sau') || fn.includes('rear') || fn.includes('rm');
+                
+                idResults.forEach(r => {
+                    if (r.text && r.text.toUpperCase().includes('R')) {
+                        isTrailer = true;
+                    }
+                });
+                
+                if (isTrailer) {
+                    entry.domainTag = 'LP_TRAILER';
+                    lpTrailerItems.push(entry);
+                } else {
+                    entry.domainTag = 'LP_TRACTOR';
+                    lpTractorItems.push(entry);
+                }
+            } else if (domainTag === 'AERIAL') {
+                aerialItems.push(entry);
+            } else if (domainTag === 'CONTAINER') {
+                const idResults = (item.results || []).filter(r => r.type === 'ID');
+                const isVertical = idResults.some(r => r.layout === 'vertical');
+                if (isVertical) {
+                    containerVertItems.push(entry);
+                } else {
+                    containerHorizItems.push(entry);
+                }
+            } else {
+                otherItems.push(entry);
+            }
+        });
+
+        const categories = [
+            { title: 'BIỂN SỐ ĐẦU KÉO (TRACTOR LP)', items: lpTractorItems, color: 'var(--success)' },
+            { title: 'BIỂN SỐ RƠ-MOÓC (TRAILER LP)', items: lpTrailerItems, color: 'var(--warn)' },
+            { title: 'AERIAL CONTAINERS (AERIAL)', items: aerialItems, color: 'var(--accent-cyan)' },
+            { title: 'STANDARD CONTAINERS - HORIZONTAL', items: containerHorizItems, color: 'var(--accent-orange)' },
+            { title: 'STANDARD CONTAINERS - VERTICAL', items: containerVertItems, color: 'var(--accent-blue)' },
+            { title: 'UNCLASSIFIED / OTHERS', items: otherItems, color: 'var(--text-muted)' }
+        ];
+
+        categories.forEach(cat => {
+            if (cat.items.length === 0) return; // Smart: only render non-empty groups
+
+            const section = document.createElement('div');
+            section.className = 'category-section';
+
+            const header = document.createElement('div');
+            header.className = 'category-header';
+            header.innerHTML = `
+                <span class="category-title-icon" style="color: ${cat.color};">▶</span>
+                <span class="category-title-text" style="color: var(--text-primary); font-weight: bold;">${cat.title}</span>
+                <span class="category-count">${cat.items.length} item${cat.items.length > 1 ? 's' : ''}</span>
+            `;
+            section.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'category-grid';
+
+            cat.items.forEach(({ item, index, domainTag }) => {
+                const card = document.createElement('div');
+                card.className = `result-card ${index === selectedIndex ? 'active' : ''}`;
+                card.onclick = () => selectCard(index);
+
+                const displayName = item.filename || (item.url ? item.url.split('/').pop() : `Image_${index+1}`);
+                
+                let status = 'REJECTED';
+                let statusClass = 'badge-danger';
+                let bestText = 'NO_RESULT';
+
+                const idResults = (item.results || []).filter(r => r.type === 'ID' || r.type === 'PLATE');
+                if (idResults.length > 0) {
+                    const hasSuccess = idResults.some(r => r.status === 'SUCCESS' || r.status === 'OK');
+                    const hasWarn = idResults.some(r => r.status === 'MOD11_FAIL' || r.status === 'VERTICAL_FAIL');
+                    status = hasSuccess ? 'SUCCESS' : (hasWarn ? 'MOD11_FAIL' : idResults[0].status);
+                    statusClass = hasSuccess ? 'badge-success' : (hasWarn ? 'badge-warn' : 'badge-danger');
+                    bestText = idResults.map(r => r.text || 'UNKNOWN').join(' / ');
+                } else if (item.error) {
+                    status = 'ERROR';
+                    statusClass = 'badge-danger';
+                    bestText = 'PROCESSING_ERROR';
+                }
+
+                let footerLabel = 'OCR Result';
+                if (domainTag === 'LP') footerLabel = 'License Plate';
+                else if (domainTag === 'LP_TRACTOR') footerLabel = 'Biển đầu kéo (Tractor)';
+                else if (domainTag === 'LP_TRAILER') footerLabel = 'Biển rơ-moóc (Trailer)';
+                else if (domainTag === 'AERIAL') footerLabel = 'Aerial Container';
+                else if (domainTag === 'CONTAINER') {
+                    const idRes = (item.results || []).filter(r => r.type === 'ID');
+                    const isVertical = idRes.some(r => r.layout === 'vertical');
+                    footerLabel = isVertical ? 'Container ID (Vertical)' : 'Container ID (Horizontal)';
+                }
+
+                const displayTag = domainTag === 'LP_TRACTOR' ? 'LP TRACTOR' : (domainTag === 'LP_TRAILER' ? 'LP TRAILER' : domainTag);
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-title" title="${displayName}">${displayName}</span>
+                        <div style="display: flex; gap: 4px;">
+                            <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">${displayTag}</span>
+                            <span class="badge ${statusClass}">${status}</span>
+                        </div>
+                    </div>
+                    <div class="card-canvas-wrapper" title="Click to zoom image">
+                        <canvas></canvas>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-footer-label">${footerLabel}</span>
+                        ${item.error 
+                            ? `<span class="card-footer-error">${item.error}</span>` 
+                            : `<span class="card-footer-value">${bestText}</span>`
+                        }
+                    </div>
+                `;
+
+                grid.appendChild(card);
+
+                // Add zoom click handler to canvas wrapper
+                const canvasWrapper = card.querySelector('.card-canvas-wrapper');
+                canvasWrapper.onclick = (e) => {
+                    e.stopPropagation();
+                    selectCard(index);
+                    openImageLightbox(index);
+                };
+
+                // Draw bounding boxes ONLY on the canvas
+                if (item.image) {
+                    const canvasEl = card.querySelector('canvas');
+                    const img = new Image();
+                    img.onload = () => {
+                        canvasEl.width = img.width;
+                        canvasEl.height = img.height;
+                        const ctx = canvasEl.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+
+                        // Draw clean, label-less bounding boxes
+                        if (item.results && item.results.length > 0) {
+                            drawBoxesOnCanvas(ctx, item.results, img.width);
+                        }
+                    };
+                    img.src = item.image;
+                }
+            });
+
+            section.appendChild(grid);
+            batchGrid.appendChild(section);
+        });
+    }
+
+    window.openImageLightbox = function(index) {
+        const item = batchResults[index];
+        if (!item || !item.image) return;
+
+        const modal = document.getElementById('image-modal');
+        const canvasEl = document.getElementById('lightbox-canvas');
+        const titleEl = document.getElementById('image-modal-title');
+        
+        const displayName = item.filename || (item.url ? item.url.split('/').pop() : `Image_${index+1}`);
+        titleEl.innerText = `chtrn302@haulamai.click: ~/ocr/viewer.bin - ${displayName}`;
+
+        const img = new Image();
+        img.onload = () => {
+            canvasEl.width = img.width;
+            canvasEl.height = img.height;
+            const ctx = canvasEl.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            if (item.results && item.results.length > 0) {
+                drawBoxesOnCanvas(ctx, item.results, img.width);
+            }
+            modal.classList.add('active');
+        };
+        img.src = item.image;
+    };
+
+    window.closeImageModal = function(e, force = false) {
+        if (force || (e && e.target.id === 'image-modal')) {
+            document.getElementById('image-modal').classList.remove('active');
+        }
+    };
+
+    // Add Escape key handler for both modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeHelpModal(null, true);
+            closeImageModal(null, true);
+        }
+    });
+
+    // Draw only bounding boxes on the canvas, keeping the view clean.
+    function drawBoxesOnCanvas(ctx, results, imgWidth) {
+        const lw = Math.max(2, Math.round(imgWidth / 400));
+        
+        results.forEach(res => {
+            const drawBox = (bbox, color, dashed) => {
+                if (!bbox || bbox.length < 4) return;
+                const [x1, y1, x2, y2] = bbox;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lw;
+                if (dashed) ctx.setLineDash([8, 4]);
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                ctx.restore();
+            };
+
+            const isFail = res.status === 'MOD11_FAIL' || res.status === 'REJECTED';
+
+            if (res.type === 'ID') {
+                // Cyan for owner code, Orange for serial number, Blue for size_type
+                drawBox(res.bbox_owner, '#00d4ff', isFail);
+                drawBox(res.bbox_serial, '#ffaa00', isFail);
+                if (res.size_type && res.bbox_size_type && res.bbox_size_type.length >= 4) {
+                    drawBox(res.bbox_size_type, '#007aff', isFail);
+                }
+            } else if (res.type === 'ST') {
+                drawBox(res.bbox_serial, '#007aff', false);
+            } else {
+                const bbox = res.bbox;
+                if (bbox && !(bbox[0]===0 && bbox[1]===0 && bbox[2]===0 && bbox[3]===0)) {
+                    let color = '#30d158'; // success green
+                    if (res.status === 'REJECTED') color = '#ff3b30'; // danger red
+                    drawBox(bbox, color, isFail);
+                }
+            }
+        });
+    }
+
+    // ── Top-level page switch ──────────────────────────────────────────────────
+    window.switchPage = function(pageName) {
+        const pageOcr   = document.getElementById('page-ocr');
+        const pageSpecs = document.getElementById('page-specs');
+        const btnOcr    = document.getElementById('page-btn-ocr');
+        const btnSpecs  = document.getElementById('page-btn-specs');
+
+        if (pageName === 'ocr') {
+            pageOcr.style.display   = 'contents';
+            pageSpecs.style.display = 'none';
+            btnOcr.classList.add('active');
+            btnSpecs.classList.remove('active');
+        } else if (pageName === 'specs') {
+            pageOcr.style.display   = 'none';
+            pageSpecs.style.display = 'flex';
+            btnOcr.classList.remove('active');
+            btnSpecs.classList.add('active');
+            fetchSystemInfo();
+        }
+    };
+
+    function fetchSystemInfo() {
+        fetch('/system-info')
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                document.getElementById('current-os').innerText   = `${data.os} ${data.os_release}`;
+                document.getElementById('current-arch').innerText  = data.machine;
+                document.getElementById('current-cores').innerText = `${data.cpu_cores_physical} Physical / ${data.cpu_cores_logical} Logical`;
+                document.getElementById('current-ram').innerText   = `${data.ram_gb} GB`;
+                const providers = (data.onnx_providers || []).join(', ');
+                document.getElementById('current-provider').innerText    = providers || 'CPUExecutionProvider';
+                document.getElementById('current-provider').style.color  = 'var(--text-primary)';
+            })
+            .catch(() => {
+                ['current-os','current-arch','current-cores','current-ram'].forEach(id => {
+                    document.getElementById(id).innerText = 'Unknown';
+                });
+                document.getElementById('current-provider').innerText   = 'CPU';
+                document.getElementById('current-provider').style.color = 'var(--text-muted)';
+            });
+    }
+
+    function selectCard(index) {
+        selectedIndex = index;
+        
+        // Update active class in UI
+        const cards = document.querySelectorAll('.result-card');
+        cards.forEach((c, idx) => {
+            if (idx === index) c.classList.add('active');
+            else c.classList.remove('active');
+        });
+
+        updateSidebar();
+        switchSidebarTab('inference');
+    }
+
+    function updateSidebar() {
+        if (selectedIndex === -1 || batchResults.length === 0 || !batchResults[selectedIndex]) {
+            sidebarSubTitle.innerText = 'No image selected';
+            sidebarIdlePane.style.display = 'flex';
+            detailDisplayPane.style.display = 'none';
+            return;
+        }
+
+        const item = batchResults[selectedIndex];
+        const displayName = item.filename || (item.url ? item.url.split('/').pop() : `Image_${selectedIndex+1}`);
+        
+        sidebarSubTitle.innerText = displayName;
+        sidebarIdlePane.style.display = 'none';
+        detailDisplayPane.style.display = 'block';
+
+        if (item.error) {
+            // Render error state in sidebar
+            detailDisplayPane.innerHTML = `
+                <div class="detail-card" style="border-color:var(--danger)">
+                    <div class="detail-header">
+                        <h3>PIPELINE FAILURE</h3>
+                        <span class="badge badge-danger">ERROR</span>
+                    </div>
+                    <div class="card-footer-error" style="margin-top:10px; font-size:13px; font-family:var(--font-mono);">
+                        ${item.error}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const idResults = (item.results || []).filter(r => r.type === 'ID' || r.type === 'PLATE');
+        
+        if (idResults.length === 0) {
+            detailDisplayPane.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <h3>DETECTION</h3>
+                        <span class="badge badge-danger">REJECTED</span>
+                    </div>
+                    <p class="card-footer-error" style="margin-top:10px;">
+                        No targets matched confidence gates.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        idResults.forEach((res, resIdx) => {
+            const status = res.status;
+            const isOk = status === 'SUCCESS' || status === 'OK';
+            const isWarn = status === 'MOD11_FAIL' || status === 'VERTICAL_FAIL';
+            const statusClass = isOk ? 'badge-success' : (isWarn ? 'badge-warn' : 'badge-danger');
+            const borderColor = isOk ? 'var(--success)' : (isWarn ? 'var(--warn)' : 'var(--danger)');
+            
+            const dbg = res.debug || {};
+            const oc = dbg.owner_code || {};
+            const sn = dbg.serial_number || {};
+            const st = dbg.size_type || {};
+
+            const isoTag = res.iso_valid ? 'VALID' : 'INVALID';
+            const isoClass = res.iso_valid ? 'valid' : 'invalid';
+
+            const cardTitle = idResults.length > 1 
+                ? (res.type === 'PLATE' ? `LICENSE PLATE #${resIdx + 1}` : `CONTAINER ID #${resIdx + 1}`) 
+                : (res.type === 'PLATE' ? 'LICENSE PLATE' : 'CONTAINER ID');
+
+            html += `
+                <div class="detail-card" style="border-color: ${borderColor}; margin-bottom: 20px;">
+                    <div class="detail-header">
+                        <h3>${cardTitle}</h3>
+                        <span class="badge ${statusClass}">${status}</span>
+                    </div>
+                    <div class="detail-prediction">
+                        ${res.text || '???????????'}
+                    </div>
+                    
+                    ${res.type === 'ID' ? `
+                    <div class="container-parts-grid">
+                        <div class="part-box">
+                            <div class="part-box-label">Owner</div>
+                            <div class="part-box-value">${res.owner_code || '????'}</div>
+                        </div>
+                        <div class="part-box">
+                            <div class="part-box-label">Serial</div>
+                            <div class="part-box-value">${res.serial_number || '???????'}</div>
+                        </div>
+                        <div class="part-box">
+                            <div class="part-box-label">Size/Type</div>
+                            <div class="part-box-value" style="color:var(--accent-blue);">${res.size_type || '—'}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="metric-row">
+                        <span class="metric-label">${res.type === 'ID' ? 'ISO 6346 Mod-11' : 'Semantic Validation'}</span>
+                        <span class="metric-value ${isoClass}">${isoTag}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Bbox Layout</span>
+                        <span class="metric-value" style="text-transform:uppercase;">${res.layout || 'horizontal'}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Decision Status</span>
+                        <span class="metric-value" style="color: ${borderColor}">${res.reason || '—'}</span>
+                    </div>
+                </div>
+            `;
+
+            // Debug table
+            html += `
+                <div class="sidebar-title" style="margin-top: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                    Pipeline Internals ${idResults.length > 1 ? `#${resIdx + 1}` : ''}
+                </div>
+                <div class="table-wrapper" style="margin-bottom: 24px;">
+                    <table class="debug-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Det Conf</th>
+                                <th>OCR Raw</th>
+                                <th>Min P</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (res.type === 'PLATE') {
+                html += `
+                            <tr>
+                                <td style="color:#30d158;">plate</td>
+                                <td>${dbg.plate?.det_conf || '—'}</td>
+                                <td><b>${dbg.plate?.ocr_raw || '—'}</b></td>
+                                <td>${dbg.plate?.min_p !== undefined ? Math.round(dbg.plate.min_p * 100) + '%' : '—'}</td>
+                            </tr>
+                `;
+            } else {
+                html += `
+                            <tr>
+                                <td style="color:#00d4ff;">cn_text</td>
+                                <td>${oc.det_conf || '—'}</td>
+                                <td><b>${oc.ocr_raw || '—'}</b></td>
+                                <td>${oc.min_p !== undefined ? Math.round(oc.min_p * 100) + '%' : '—'}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#ffaa00;">cn_serial</td>
+                                <td>${sn.det_conf || '—'}</td>
+                                <td><b>${sn.ocr_raw || '—'}</b></td>
+                                <td>${sn.min_p !== undefined ? Math.round(sn.min_p * 100) + '%' : '—'}</td>
+                            </tr>
+                `;
+                if (res.size_type) {
+                    html += `
+                            <tr>
+                                <td style="color:var(--accent-blue);">size_type</td>
+                                <td>${st.det_conf || '—'}</td>
+                                <td><b>${st.ocr_raw || '—'}</b></td>
+                                <td>${st.min_p !== undefined ? Math.round(st.min_p * 100) + '%' : '—'}</td>
+                            </tr>
+                    `;
+                }
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // TTA Consensus log rendering for multiple results
+            if (dbg.tta_triggered) {
+                if (res.type === 'PLATE') {
+                    const candidates = dbg.tta_candidates || [];
+                    const rescue = dbg.tta_rescue;
+                    const yoloCount = dbg.yolo_char_count;
+                    const yoloColor = (yoloCount !== undefined && yoloCount !== null)
+                        ? (Math.abs(((rescue || res.text || '').length) - yoloCount) === 0 ? 'var(--success)' : 'var(--warn)')
+                        : 'var(--text-muted)';
+                    html += `
+                        <div class="tta-box" style="margin-top: 14px; margin-bottom: 24px;">
+                            <div class="tta-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                                LP TTA Consensus logs ${idResults.length > 1 ? `#${resIdx + 1}` : ''}
+                            </div>
+                            <div class="tta-body">
+                                <div style="margin-bottom:6px;">
+                                    • <span style="color:var(--accent-cyan); font-weight:700;">YOLO Physical Count:</span>
+                                    <b style="color:${yoloColor};">${yoloCount !== undefined && yoloCount !== null ? yoloCount + ' chars' : 'N/A'}</b>
+                                </div>
+                                <div style="margin-bottom:8px;">
+                                    • Consensus result: <b>${rescue || 'No Rescue'}</b><br>
+                                    • Candidate pool: [${candidates.map(c => `${c[0]} (${c[1]} votes)`).join(', ') || 'Empty'}]
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const to = dbg.tta_owner || {};
+                    const ts = dbg.tta_serial || {};
+                    html += `
+                        <div class="tta-box" style="margin-top: 14px; margin-bottom: 24px;">
+                            <div class="tta-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                </svg>
+                                Container TTA consensus logs ${idResults.length > 1 ? `#${resIdx + 1}` : ''}
+                            </div>
+                            <div class="tta-body">
+                                <div style="margin-bottom:8px;">
+                                    <span style="color:var(--accent-cyan); font-weight:700;">Owner Code TTA:</span><br>
+                                    • Consensus result: <b>${to.consensus || 'No Consensus'}</b> (votes: ${to.votes || 0})<br>
+                                    • Candidate pool: [${(to.candidates || []).join(', ')}]
+                                </div>
+                                <div>
+                                    <span style="color:var(--accent-orange); font-weight:700;">Serial Code TTA:</span><br>
+                                    • Consensus result: <b>${ts.consensus || 'No Consensus'}</b> (votes: ${ts.votes || 0})<br>
+                                    • Candidate pool: [${(ts.candidates || []).join(', ')}]
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        detailDisplayPane.innerHTML = html;
+    }
+
+    let transactionSessionName = 'Auto-Grouped';
+    let transactionStatusText = 'VEHICLE RUN';
+
+    window.switchSidebarTab = function(tabName) {
+        const tabVehicle = document.getElementById('tab-btn-vehicle');
+        const tabInference = document.getElementById('tab-btn-inference');
+        const contentVehicle = document.getElementById('sidebar-tab-vehicle-content');
+        const contentInference = document.getElementById('sidebar-tab-inference-content');
+        
+        if (tabName === 'vehicle') {
+            tabVehicle.classList.add('active');
+            tabInference.classList.remove('active');
+            contentVehicle.style.display = 'flex';
+            contentInference.style.display = 'none';
+            
+            document.getElementById('sidebar-main-title').innerText = 'Kết quả tổng hợp';
+            document.getElementById('sidebar-sub-title').innerText = `Session: ${transactionSessionName}`;
+        } else if (tabName === 'inference') {
+            tabVehicle.classList.remove('active');
+            tabInference.classList.add('active');
+            contentVehicle.style.display = 'none';
+            contentInference.style.display = 'flex';
+            
+            document.getElementById('sidebar-main-title').innerText = 'Inference Details';
+            if (selectedIndex !== -1 && batchResults[selectedIndex]) {
+                const item = batchResults[selectedIndex];
+                const displayName = item.filename || (item.url ? item.url.split('/').pop() : `Image_${selectedIndex+1}`);
+                document.getElementById('sidebar-sub-title').innerText = displayName;
+            } else {
+                document.getElementById('sidebar-sub-title').innerText = 'No image selected';
+            }
+        }
+    }
+
+    function generateVehicleReport(results) {
+        const reportContent = document.getElementById('vehicle-report-content');
+        
+        if (!results || results.length === 0) {
+            reportContent.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--text-muted);">
+                    <span>Chưa có tệp tin nào được xử lý.</span>
+                </div>
+            `;
+            transactionSessionName = 'None';
+            transactionStatusText = 'NO DATA';
+            
+            const tabVehicle = document.getElementById('tab-btn-vehicle');
+            if (tabVehicle.classList.contains('active')) {
+                document.getElementById('sidebar-sub-title').innerText = `Session: ${transactionSessionName}`;
+            }
+            return;
+        }
+        
+        // Group items by prefix
+        const groups = {};
+        const stopKeywords = [
+            // Pipeline routing keywords
+            'lp', 'bienso', 'noc', 'aerial', 'top', 'camnoc', 'container',
+            'plate', 'cont',
+            // Direction / position keywords
+            'front', 'rear', 'sau', 'truoc', 'left', 'right', 'trung', 'ngoai',
+            'side', 'back',
+            // Trailer / tractor keywords
+            'trailer', 'romooc', 'ro-mooc', 'tractor', 'daukeo', 'dau-keo',
+            // Camera angle / layout keywords  ← KEY FIX
+            'vertical', 'vert',
+            'horizontal', 'horiz', 'hori',
+            'acp',
+            'cam', 'camera',
+        ];
+        
+        results.forEach(item => {
+            const filename = item.filename || '';
+            const base = filename.split('/').pop().split('\\').pop();
+            const baseNoExt = base.substring(0, base.lastIndexOf('.')) || base;
+            
+            const parts = baseNoExt.split(/[_-]/);
+            const collected = [];
+            for (let i = 0; i < parts.length; i++) {
+                const p = parts[i].toLowerCase();
+                if (stopKeywords.includes(p)) {
+                    break;
+                }
+                collected.push(parts[i]);
+            }
+            
+            const prefix = collected.join('_');
+            const groupKey = prefix || 'default_session';
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push(item);
+        });
+        
+        const groupKeys = Object.keys(groups);
+        let html = '';
+        let isVehicleSession = false;
+        const vehicleSessionNames = [];
+        
+        groupKeys.forEach(key => {
+            const items = groups[key];
+            let lpItems = [];
+            let contItems = [];
+            
+            items.forEach(item => {
+                if (item.error) return;
+                const domain = item.domain || '';
+                if (domain === 'LP') {
+                    lpItems.push(item);
+                } else if (domain === 'CONTAINER' || domain === 'AERIAL') {
+                    contItems.push(item);
+                }
+            });
+            
+            // Extract Unique Plate Texts (exclude REJECTED results)
+            const platesMap = {};
+            lpItems.forEach(item => {
+                const idResults = (item.results || []).filter(r => r.type === 'PLATE' && r.status !== 'REJECTED');
+                idResults.forEach(r => {
+                    if (r.text) {
+                        const cleanText = r.text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                        if (cleanText) {
+                            platesMap[cleanText] = { 
+                                text: r.text, 
+                                filename: item.filename, 
+                                conf: r.debug?.plate?.min_p || 0 
+                            };
+                        }
+                    }
+                });
+            });
+            const plates = Object.values(platesMap);
+            
+            // Extract Unique Container IDs (exclude REJECTED results)
+            const contMap = {};
+            contItems.forEach(item => {
+                const idResults = (item.results || []).filter(r => r.type === 'ID' && r.status !== 'REJECTED');
+                idResults.forEach(r => {
+                    if (r.text) {
+                        const cleanText = r.text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                        if (cleanText) {
+                            const existing = contMap[cleanText];
+                            const st = (r.size_type && r.size_type.length >= 3) ? r.size_type : (existing ? existing.size_type : (r.size_type || null));
+                            contMap[cleanText] = { 
+                                text: r.text, 
+                                iso_valid: r.iso_valid, 
+                                size_type: st,
+                                filename: item.filename,
+                                conf: r.debug?.owner_code?.min_p || 0
+                            };
+                        }
+                    }
+                });
+            });
+            const containers = Object.values(contMap);
+            
+            // Define Vehicle Run mode based on physical input images count
+            const hasLP = lpItems.length > 0;
+            const hasCont = contItems.length > 0;
+            const isGroupVehicle = hasLP && hasCont && lpItems.length <= 2 && contItems.length <= 2;
+            
+            if (isGroupVehicle) {
+                isVehicleSession = true;
+                vehicleSessionNames.push(key === 'default_session' ? 'Auto-Grouped' : key);
+                
+                let tractorPlate = '';
+                let trailerPlate = '';
+                
+                plates.forEach(p => {
+                    const txt = p.text.toUpperCase();
+                    const fn = (p.filename || '').toLowerCase();
+                    const isTrailer = txt.includes('R') || fn.includes('trailer') || fn.includes('romooc') || fn.includes('ro-mooc') || fn.includes('sau') || fn.includes('rear') || fn.includes('rm');
+                    
+                    if (isTrailer) {
+                        if (!trailerPlate) trailerPlate = p.text;
+                    } else {
+                        if (!tractorPlate) tractorPlate = p.text;
+                    }
+                });
+                
+                if (plates.length > 0 && !tractorPlate && !trailerPlate) {
+                    tractorPlate = plates[0].text;
+                    if (plates.length > 1) trailerPlate = plates[1].text;
+                } else if (plates.length > 0) {
+                    if (!tractorPlate) {
+                        const remaining = plates.filter(p => p.text !== trailerPlate);
+                        if (remaining.length > 0) tractorPlate = remaining[0].text;
+                    }
+                    if (!trailerPlate && plates.length > 1) {
+                        const remaining = plates.filter(p => p.text !== tractorPlate);
+                        if (remaining.length > 0) trailerPlate = remaining[0].text;
+                    }
+                }
+                
+                const formatPlate = (val) => {
+                    if (!val) return '';
+                    let clean = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                    if (clean.length >= 7) {
+                        const prefix = clean.substring(0, 3);
+                        const rest = clean.substring(3);
+                        if (rest.length === 4) {
+                            return `${prefix}-${rest}`;
+                        } else if (rest.length === 5) {
+                            return `${prefix}-${rest.substring(0, 3)}.${rest.substring(3)}`;
+                        }
+                    }
+                    return val.toUpperCase();
+                };
+                
+                const tractorFormatted = formatPlate(tractorPlate);
+                const trailerFormatted = formatPlate(trailerPlate);
+                
+                let totalConf = 0;
+                let confCount = 0;
+                plates.forEach(p => { if (p.conf) { totalConf += p.conf; confCount++; } });
+                containers.forEach(c => { if (c.conf) { totalConf += c.conf; confCount++; } });
+                const avgConf = confCount > 0 ? Math.round((totalConf / confCount) * 100) : 95;
+                
+                let verdictText = 'KẾT QUẢ HỢP LỆ (COMPLETE PASS)';
+                let verdictColor = 'var(--success)';
+                let hasInvalidContainer = containers.some(c => !c.iso_valid);
+                
+                // Track if any required elements were rejected
+                let hasAnyRejected = false;
+                items.forEach(item => {
+                    if (item.results && item.results.some(r => r.status === 'REJECTED')) {
+                        hasAnyRejected = true;
+                    }
+                });
+                
+                if (hasAnyRejected) {
+                    verdictText = 'KẾT QUẢ BỊ TỪ CHỐI (REJECTED)';
+                    verdictColor = 'var(--danger)';
+                } else if (hasInvalidContainer) {
+                    verdictText = 'CẢNH BÁO: SAI ISO CHECK DIGIT (MOD11 FAIL)';
+                    verdictColor = 'var(--danger)';
+                } else if (!tractorPlate) {
+                    verdictText = 'THIẾU BIỂN SỐ XE ĐẦU KÉO (MISSING TRACTOR)';
+                    verdictColor = 'var(--warn)';
+                } else if (!trailerPlate && containers.length > 0) {
+                    verdictText = 'CẢNH BÁO: THIẾU BIỂN RƠ-MOÓC (MISSING TRAILER)';
+                    verdictColor = 'var(--warn)';
+                }
+                
+                html += `
+                    <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.06); padding-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan); font-family: var(--font-mono);">[ XE: ${key === 'default_session' ? 'Auto-Grouped' : key} ]</span>
+                            <span class="badge badge-success" style="font-size: 8px; padding: 2px 6px;">VEHICLE RUN</span>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Tractor Plate Card -->
+                            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Biển đầu kéo (Tractor)</span>
+                                <div style="font-size: 20px; font-weight: 800; color: var(--text-primary); text-align: center; font-family: var(--font-mono); letter-spacing: 1px; padding: 6px; border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; background: rgba(255,255,255,0.02);">
+                                    ${tractorFormatted || '<span style="color:var(--danger); font-weight:400; font-size:12px; letter-spacing:0;">KẾT QUẢ BỊ TỪ CHỐI</span>'}
+                                </div>
+                            </div>
+
+                            <!-- Trailer Plate Card -->
+                            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Biển rơ-moóc (Trailer)</span>
+                                <div style="font-size: 20px; font-weight: 800; color: var(--accent-orange); text-align: center; font-family: var(--font-mono); letter-spacing: 1px; padding: 6px; border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; background: rgba(255,255,255,0.02);">
+                                    ${trailerFormatted || '<span style="color:var(--danger); font-weight:400; font-size:12px; letter-spacing:0;">KẾT QUẢ BỊ TỪ CHỐI</span>'}
+                                </div>
+                            </div>
+
+                            <!-- Container ID Card(s) -->
+                            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Danh sách Container (Tối đa 2 công)</span>
+                                <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 2px;">
+                                    ${containers.slice(0, 2).map((c, i) => `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 4px; border: 1px solid ${c.iso_valid ? 'rgba(48,209,88,0.15)' : 'rgba(255,59,48,0.15)'}; gap: 8px;">
+                                            <span style="font-size: 10px; font-weight: 700; color: var(--text-secondary); font-family: var(--font-mono); flex-shrink:0;">CÔNG #${i+1}</span>
+                                            <span style="font-size: 14px; font-weight: 800; color: var(--text-primary); font-family: var(--font-mono); flex:1; text-align:center;">${c.text}</span>
+                                            ${c.size_type ? `<span style="font-size: 10px; font-weight: 700; color: var(--accent-blue); font-family: var(--font-mono); flex-shrink:0;">${c.size_type}</span>` : ''}
+                                            <span class="badge ${c.iso_valid ? 'badge-success' : 'badge-danger'}" style="font-size: 8px; padding: 1px 4px; flex-shrink:0;">${c.iso_valid ? 'VALID' : 'INVALID'}</span>
+                                        </div>
+                                    `).join('')}
+                                    ${containers.length === 0 ? (
+                                        contItems.length > 0
+                                        ? `<div style="text-align: center; color: var(--danger); font-size: 11px; padding: 8px; border: 1px dashed var(--danger); border-radius: 4px; background: rgba(255,59,48,0.02); font-family: var(--font-mono); font-weight: bold;">KẾT QUẢ BỊ TỪ CHỐI</div>`
+                                        : `<div style="text-align: center; color: var(--text-muted); font-size: 10px; padding: 6px; font-family: var(--font-mono);">[ KHÔNG PHÁT HIỆN CONTAINER ]</div>`
+                                    ) : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consolidated Verdict -->
+                        <div style="background: ${verdictColor === 'var(--danger)' ? 'rgba(255,59,48,0.04)' : (verdictColor === 'var(--warn)' ? 'rgba(255,159,10,0.04)' : 'rgba(48,209,88,0.04)')}; border: 1px solid ${verdictColor === 'var(--danger)' ? 'rgba(255,59,48,0.2)' : (verdictColor === 'var(--warn)' ? 'rgba(255,159,10,0.2)' : 'rgba(48,209,88,0.2)')}; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
+                            <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: ${verdictColor}; letter-spacing: 0.5px;">Kết quả tổng hợp</div>
+                            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">${verdictText}</div>
+                            <div style="display:flex; justify-content:space-between; margin-top: 2px; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono);">
+                                <span>ĐỘ TIN CẬY TRUNG BÌNH:</span>
+                                <span style="font-weight: 800; color: ${verdictColor}">${avgConf}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        if (isVehicleSession) {
+            transactionSessionName = vehicleSessionNames.join(', ');
+            transactionStatusText = 'VEHICLE RUN';
+            reportContent.innerHTML = html;
+        } else {
+            transactionSessionName = 'Individual Tests';
+            transactionStatusText = 'TEST MODE';
+            
+            const totalFiles = results.length;
+            const lpCount = results.filter(r => r.domain === 'LP').length;
+            const containerCount = results.filter(r => r.domain === 'CONTAINER' || r.domain === 'AERIAL').length;
+            
+            reportContent.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; gap: 12px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); text-transform: uppercase;">Chế độ Kiểm thử (Test Run Mode)</div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px; max-width: 250px; line-height: 1.5; text-align: left;">
+                            Hệ thống đang hiển thị kết quả riêng lẻ từng tệp tin. Để chạy chế độ Giao dịch Xe thực tế, vui lòng tải lên nhóm ảnh có cùng tiền tố xe (ví dụ: <code style="color:var(--accent-cyan);">xe1_lp.jpg</code>, <code style="color:var(--accent-cyan);">xe1_cont.jpg</code>) hoặc đóng gói tệp ZIP.
+                        </p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 10px; width: 100%; align-items: flex-start; font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);">
+                        <div>Tổng số ảnh: <b style="color:var(--text-primary);">${totalFiles}</b></div>
+                        <div>Biển số (LP): <b style="color:var(--success);">${lpCount}</b></div>
+                        <div>Container: <b style="color:var(--accent-cyan);">${containerCount}</b></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const tabVehicle = document.getElementById('tab-btn-vehicle');
+        if (tabVehicle.classList.contains('active')) {
+            document.getElementById('sidebar-sub-title').innerText = `Session: ${transactionSessionName}`;
+        }
+        
+        switchSidebarTab('vehicle');
+    }
+
+    // Event listeners to persist configurations in LocalStorage
+    document.getElementById('ctrl-lp-prefixes').addEventListener('input', (e) => {
+        localStorage.setItem('lp_prefixes', e.target.value);
+    });
+    document.getElementById('ctrl-top-prefixes').addEventListener('input', (e) => {
+        localStorage.setItem('top_prefixes', e.target.value);
+    });
+    document.getElementById('ctrl-conf-lp').addEventListener('input', (e) => {
+        localStorage.setItem('conf_lp', e.target.value);
+    });
+    document.getElementById('ctrl-conf-container').addEventListener('input', (e) => {
+        localStorage.setItem('conf_container', e.target.value);
+    });
+    document.getElementById('ctrl-vote').addEventListener('input', (e) => {
+        localStorage.setItem('vote', e.target.value);
+    });
+
+    // Load persisted configurations from LocalStorage
+    if (localStorage.getItem('lp_prefixes') !== null) {
+        document.getElementById('ctrl-lp-prefixes').value = localStorage.getItem('lp_prefixes');
+    }
+    if (localStorage.getItem('top_prefixes') !== null) {
+        document.getElementById('ctrl-top-prefixes').value = localStorage.getItem('top_prefixes');
+    }
+    if (localStorage.getItem('conf_lp') !== null) {
+        document.getElementById('ctrl-conf-lp').value = localStorage.getItem('conf_lp');
+    }
+    if (localStorage.getItem('conf_container') !== null) {
+        document.getElementById('ctrl-conf-container').value = localStorage.getItem('conf_container');
+    }
+    if (localStorage.getItem('vote') !== null) {
+        document.getElementById('ctrl-vote').value = localStorage.getItem('vote');
+    }
+
+    // Initial Render
+    renderGrid();
+    updateSidebar();
+    generateVehicleReport(batchResults);
+
+    // ── Help Modal Control ───────────────────────────────────────────────────
+    window.showHelpModal = function() {
+        document.getElementById('help-modal').classList.add('active');
+    }
+    
+    window.closeHelpModal = function(e, force = false) {
+        if (force || e.target.id === 'help-modal') {
+            document.getElementById('help-modal').classList.remove('active');
+        }
+    }
+</script>
+
+<!-- Help Modal -->
+<div id="help-modal" class="modal-overlay" onclick="closeHelpModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; padding: 0; display: flex; flex-direction: column;">
+        <!-- Terminal Header for Help Modal -->
+        <div class="terminal-header" style="background-color: #1a1818; padding: 10px 14px; display: flex; align-items: center; border-bottom: 1px solid var(--border-warm); gap: 8px; position: relative;">
+            <div class="dots-group">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <span class="terminal-title" style="font-size: 11px; color: var(--text-muted);">chtrn302@haulamai.click: ~/ocr/manual.txt</span>
+            <button class="modal-close-btn" onclick="closeHelpModal(event, true)" style="position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Terminal Body for Help Modal -->
+        <div class="terminal-body" style="padding: 20px; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: var(--text-secondary); background: #201d1d; text-align: left;">
+            <div style="margin-bottom: 14px;">
+                <span style="color: var(--accent-cyan); font-weight: bold;">$ cat ocr_manual.txt</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <p>
+                    Hệ thống OCR đa miền tự động nhận dạng và định tuyến 3 loại: Biển số xe (LP), Container hông (Side), Container nóc (Aerial).
+                </p>
+                
+                <div>
+                    <span style="color: var(--accent-orange); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">[1] QUY TẮC ĐỊNH TUYẾN PREFIX</span>
+                    <ul style="margin-left: 16px; margin-top: 4px; list-style-type: square; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                        <li>Tên ảnh chứa prefix <b style="color: var(--success);">lp</b> / <b style="color: var(--success);">bienso</b>: Chạy pipeline Biển số.</li>
+                        <li>Tên ảnh chứa prefix <b style="color: var(--accent-cyan);">noc</b> / <b style="color: var(--accent-cyan);">aerial</b> / <b style="color: var(--accent-cyan);">top</b> / <b style="color: var(--accent-cyan);">camnoc</b>: Chạy pipeline Container Nóc.</li>
+                        <li>Các trường hợp còn lại: Chạy mặc định Container Hông.</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <span style="color: var(--accent-orange); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">[2] XỬ LÝ FILE ZIP</span>
+                    <p style="margin-top: 2px;">
+                        Hỗ trợ nén nhiều ảnh dạng tệp <code style="color:var(--text-primary);">.zip</code>. Tệp zip sẽ được giải nén trực tiếp trong bộ nhớ RAM (không ghi đĩa cứng) để tăng tốc độ xử lý hàng loạt.
+                    </p>
+                </div>
+
+                <div>
+                    <span style="color: var(--accent-orange); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">[3] CẤU HÌNH TỰ ĐỘNG QUA PREFIX.MD / PREFIX.TXT</span>
+                    <p style="margin-top: 2px;">
+                        Để tự động nạp từ khóa định tuyến khi tải tệp ZIP, đặt file <code style="color:var(--text-primary);">prefix.md</code> hoặc <code style="color:var(--text-primary);">prefix.txt</code> ở thư mục gốc của tệp ZIP với định dạng mẫu sau:
+                    </p>
+                    <pre style="margin-top: 6px; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 4px; color: var(--accent-cyan); font-size: 11px; font-family: var(--font-mono); line-height: 1.4;">
+# Dấu thăng dùng để viết chú thích
+lp = lp, bienso, custom_lp
+top = noc, aerial, camnoc, top
+                    </pre>
+                </div>
+                
+                <div>
+                    <span style="color: var(--accent-orange); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">[4] CẤU HÌNH SIDEBAR</span>
+                    <p style="margin-top: 2px;">
+                        Người dùng tùy chỉnh từ khóa prefix động và ngưỡng độ tin cậy (`DET CONF`), số lượt biểu quyết TTA (`TTA VOTES`) tại bảng điều khiển bên phải.
+                    </p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <button class="btn-primary" style="font-size: 11px; font-weight: 700; height: 32px; padding: 0 16px;" onclick="closeHelpModal(event, true)">$ exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Lightbox Modal -->
+<div id="image-modal" class="modal-overlay" onclick="closeImageModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 90vw; width: auto; padding: 0; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--border-color);">
+        <!-- Terminal Header for Image Modal -->
+        <div class="terminal-header" style="background-color: #1a1818; padding: 10px 14px; display: flex; align-items: center; border-bottom: 1px solid var(--border-warm); gap: 8px; position: relative;">
+            <div class="dots-group">
+                <div class="dot dot-red" onclick="closeImageModal(event, true)" style="cursor: pointer;"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <span class="terminal-title" id="image-modal-title" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">chtrn302@haulamai.click: ~/ocr/viewer.bin</span>
+            <button class="modal-close-btn" onclick="closeImageModal(event, true)" style="position: absolute; top: 8px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Terminal Body for Image Modal -->
+        <div class="terminal-body" style="padding: 16px; background: #201d1d; display: flex; justify-content: center; align-items: center; overflow: auto; max-height: calc(90vh - 40px);">
+            <div style="position: relative; max-width: 100%; max-height: 100%; display: flex; justify-content: center; align-items: center;">
+                <canvas id="lightbox-canvas" style="max-width: 100%; max-height: calc(80vh - 60px); object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.5); background-color: #100f0f; border: 1px solid var(--border-color); border-radius: 4px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

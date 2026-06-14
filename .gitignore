@@ -13,3 +13,6 @@ wheels/
 GEMINI.md
 r_LocalLlama_comments.jsonl
 reddit_elite_raw_candidates.jsonl
+*.pt
+*.onnx
+*.onnx.data

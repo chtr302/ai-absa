@@ -10,29 +10,74 @@ const CATEGORIES = [
 
 const SENTIMENTS = ["Positive", "Negative", "Neutral"];
 
-const EXAMPLE_PREDICTION = {
-  sentence: "ChatGPT responds very quickly and is helpful, but its coding reasoning is sometimes inaccurate.",
-  results: {
-    advanced: {
-      model_type: "advanced",
-      sentence: "ChatGPT responds very quickly and is helpful, but its coding reasoning is sometimes inaccurate.",
-      quads: [
-        {
-          aspect: "response speed",
-          opinion: "very quickly",
-          category: "PERFORMANCE",
-          sentiment: "Positive",
-        },
-        {
-          aspect: "coding reasoning",
-          opinion: "sometimes inaccurate",
-          category: "INTELLIGENCE",
-          sentiment: "Negative",
-        },
-      ],
+const EXAMPLES = [
+  {
+    sentence: "I like it personally, Llama 3.1 8B is my go-to model for fine tuning. I may switch to Gemma 3 though based on what I'm reading.",
+    results: {
+      advanced: {
+        model_type: "advanced",
+        sentence: "I like it personally, Llama 3.1 8B is my go-to model for fine tuning. I may switch to Gemma 3 though based on what I'm reading.",
+        quads: [
+          {
+            aspect: "Llama 3.1 8B",
+            opinion: "go-to model for fine tuning",
+            category: "RESOURCES",
+            sentiment: "Positive",
+          },
+        ],
+      },
     },
   },
-};
+  {
+    sentence: "Claude 3.5 is great, but modernbert is faster.",
+    results: {
+      advanced: {
+        model_type: "advanced",
+        sentence: "Claude 3.5 is great, but modernbert is faster.",
+        quads: [
+          {
+            aspect: "Claude 3.5",
+            opinion: "great",
+            category: "INTELLIGENCE",
+            sentiment: "Positive",
+          },
+          {
+            aspect: "Claude 3.5",
+            opinion: "faster",
+            category: "INTELLIGENCE",
+            sentiment: "Positive",
+          },
+        ],
+      },
+    },
+  },
+  {
+    sentence: "Sounds like we may have a decent coding model for the GPU poor. The old 30B A3B ran surprisingly well on CPU only.",
+    results: {
+      advanced: {
+        model_type: "advanced",
+        sentence: "Sounds like we may have a decent coding model for the GPU poor. The old 30B A3B ran surprisingly well on CPU only.",
+        quads: [
+          {
+            aspect: "old",
+            opinion: "ran surprisingly well on CPU only",
+            category: "PERFORMANCE",
+            sentiment: "Positive",
+          },
+          {
+            aspect: "30B A3B",
+            opinion: "ran surprisingly well on CPU only",
+            category: "PERFORMANCE",
+            sentiment: "Positive",
+          },
+        ],
+      },
+    },
+  }
+];
+
+const EXAMPLE_PREDICTION = EXAMPLES[0];
+let currentExampleIndex = 0;
 
 const state = {
   currentPage: 1,
@@ -54,7 +99,7 @@ const state = {
   factorFocus: { category: [], sentiment: [], aspect: [] },
 };
 
-const TAB_IDS = ["predict", "benchmark", "explorer", "dataset"];
+const TAB_IDS = ["predict", "benchmark", "explorer", "dataset", "presentation"];
 const LEGACY_TAB_MAP = {
   stats: "dataset",
   overview: "dataset",
@@ -564,7 +609,7 @@ function getRelationPanels(row) {
 function relationItemButton(item, type) {
   return `
     <button class="relation-item" type="button" data-focus-type="${escapeHtml(type)}" data-focus-key="${escapeHtml(item.key)}">
-      <span>
+      <span class="relation-meta-text">
         <strong>${escapeHtml(item.item)}</strong>
         <small>${fmtNumber(item.count)} quads &middot; ${fmtMetric(item.percent, 1)}%</small>
       </span>
@@ -694,9 +739,13 @@ async function submitPrediction(event) {
 }
 
 function loadExamplePrediction() {
-  document.getElementById("predictSentenceInput").value = EXAMPLE_PREDICTION.sentence;
-  renderPrediction(EXAMPLE_PREDICTION, "sample");
-  setMessage("predictMessage", "Sample sentence with 2 quads loaded.", "success");
+  const example = EXAMPLES[currentExampleIndex];
+  document.getElementById("predictSentenceInput").value = example.sentence;
+  renderPrediction(example, "sample");
+  setMessage("predictMessage", `Loaded Sample #${currentExampleIndex + 1} with ${example.results.advanced.quads.length} quads.`, "success");
+  
+  // Cycle to next index
+  currentExampleIndex = (currentExampleIndex + 1) % EXAMPLES.length;
 }
 
 function debounce(fn, delay) {
@@ -927,12 +976,75 @@ function bindEvents() {
 
   document.getElementById("loadExampleButton").addEventListener("click", loadExamplePrediction);
   document.getElementById("predictForm").addEventListener("submit", submitPrediction);
+
+  const getEmbedUrl = (url) => {
+    url = url.trim();
+    if (url.includes("canva.com/design/")) {
+      let cleanUrl = url.split('?')[0];
+      if (cleanUrl.endsWith('/edit') || cleanUrl.endsWith('/watch') || cleanUrl.endsWith('/view')) {
+        cleanUrl = cleanUrl.substring(0, cleanUrl.lastIndexOf('/'));
+      }
+      if (!cleanUrl.endsWith('/view')) {
+        cleanUrl = cleanUrl + '/view';
+      }
+      return cleanUrl + '?embed';
+    }
+    if (url.includes("docs.google.com/presentation/")) {
+      if (url.includes("/pub")) {
+        return url.replace("/pub", "/embed");
+      }
+      const match = url.match(/(https:\/\/docs\.google\.com\/presentation\/d\/[a-zA-Z0-9_-]+)/);
+      if (match) {
+        return match[1] + "/embed";
+      }
+    }
+    return url;
+  };
+
+
+  const loadPresentationBtn = document.getElementById("loadPresentationButton");
+  const urlInput = document.getElementById("presentationUrlInput");
+  const wrapper = document.getElementById("presentationIframeWrapper");
+
+  if (loadPresentationBtn && urlInput && wrapper) {
+    loadPresentationBtn.addEventListener("click", () => {
+      const rawUrl = urlInput.value.trim();
+      if (!rawUrl) {
+        return;
+      }
+      const embedUrl = getEmbedUrl(rawUrl);
+      localStorage.setItem("presentation_url", rawUrl);
+      wrapper.innerHTML = `<iframe src="${escapeHtml(embedUrl)}" allowfullscreen="true"></iframe>`;
+    });
+
+    // Auto-sync when typing (debounced)
+    urlInput.addEventListener("input", debounce(() => {
+      loadPresentationBtn.click();
+    }, 600));
+
+    // Load persisted URL on startup
+    const savedUrl = localStorage.getItem("presentation_url");
+    if (savedUrl) {
+      urlInput.value = savedUrl;
+      setTimeout(() => {
+        loadPresentationBtn.click();
+      }, 300);
+    }
+  }
+
+  const loadPresetCanvaBtn = document.getElementById("loadPresetCanvaButton");
+  if (loadPresetCanvaBtn && urlInput && loadPresentationBtn) {
+    loadPresetCanvaBtn.addEventListener("click", () => {
+      urlInput.value = "https://www.canva.com/design/DAGIrO1M2tI/w4sB7F_4J1pXv2j1_m4R2A/view?embed";
+      loadPresentationBtn.click();
+    });
+  }
 }
+
 
 async function init() {
   activateTab(window.location.hash.replace("#", ""), false);
   bindEvents();
-  renderPrediction(EXAMPLE_PREDICTION, "sample");
   await Promise.all([
     loadOverview(),
     loadCategoryDistribution(),

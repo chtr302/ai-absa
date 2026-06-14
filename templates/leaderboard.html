@@ -4,323 +4,441 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AI-ABSA Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='leaderboard.css') }}">
   </head>
   <body>
-    <div class="container">
-      <div class="terminal-frame">
-        <!-- Terminal Header -->
-        <div class="terminal-header">
-          <div class="dots-group">
-            <div class="dot dot-red"></div>
-            <div class="dot dot-yellow"></div>
-            <div class="dot dot-green"></div>
-          </div>
-          <span class="terminal-title">chtrn302@haulamai.click: ~/ai-absa</span>
-        </div>
-        <!-- Terminal Body -->
-        <div class="terminal-body">
-          <div class="app-shell">
-      <header class="top-shell">
-        <section class="project-overview" aria-labelledby="projectTitle">
-          <div class="overview-copy">
-            <p class="eyebrow">Aspect-Based Sentiment Analysis</p>
-            <h1 id="projectTitle">AI-ABSA Dashboard</h1>
-            <p class="subtitle">
-              A friendly workspace for exploring how AI products are discussed: find aspects, extract opinions,
-              compare model quality, and trace every result back to real dataset samples.
-            </p>
-            <div class="intro-highlights" aria-label="Project introduction">
-              <div>
-                <span>What This Project Does</span>
-                <strong>Turns messy AI feedback into clean ABSA quads: aspect, opinion, category, and sentiment.</strong>
-              </div>
-              <div>
-                <span>Start Here</span>
-                <strong>Try a sentence, inspect the leaderboard, then jump into the dataset to see the evidence behind each number.</strong>
-              </div>
+    <div class="app-container">
+      <!-- Modern Styled App Window -->
+      <div class="app-window">
+        <!-- Unified Header/Navbar -->
+        <header class="app-header">
+          <div class="header-logo-group">
+            <div class="window-controls">
+              <span class="control-dot dot-red"></span>
+              <span class="control-dot dot-yellow"></span>
+              <span class="control-dot dot-green"></span>
+            </div>
+            <div class="logo-brand">
+              <span class="terminal-path"><a href="https://haulamai.click" class="terminal-path-link">~</a>/absa.haulamai.click</span>
             </div>
           </div>
 
-          <div class="github-panel" aria-label="GitHub links">
-            <a class="repo-card" href="https://github.com/chtr302/ai-absa" target="_blank" rel="noreferrer" aria-label="AI-ABSA repository">
-              <span class="repo-icon">
-                <svg class="github-icon" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
-                </svg>
-              </span>
-              <span>
-                <span class="link-kicker">Repository</span>
-                <strong>chtr302/ai-absa</strong>
-                <small>Source code, dashboard, evaluation pipeline</small>
-              </span>
+          <!-- Tab Navigation -->
+          <nav class="tab-nav" aria-label="Dashboard sections">
+            <button class="tab-button is-active" type="button" data-tab-target="predict">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8.5 7.5 10.5 9.5 8.5 11.5"/><path d="M12 11.5h3.5"/></svg>
+              <span>Predict</span>
+            </button>
+            <button class="tab-button" type="button" data-tab-target="benchmark">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/><path d="M12 2a6 6 0 0 1 6 6v1a6 6 0 0 1-6 6a6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z"/></svg>
+              <span>Benchmark</span>
+            </button>
+            <button class="tab-button" type="button" data-tab-target="explorer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+              <span>Explorer</span>
+            </button>
+            <button class="tab-button" type="button" data-tab-target="dataset">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              <span>Dataset</span>
+            </button>
+            <button class="tab-button" type="button" data-tab-target="presentation">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h20v14H2z"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+              <span>Present</span>
+            </button>
+          </nav>
+
+          <!-- Header Actions -->
+          <div class="header-actions">
+            <a href="https://github.com/chtr302/ai-absa" target="_blank" rel="noreferrer" class="github-icon-link" title="GitHub Repository">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+                <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
+              </svg>
             </a>
-
-            <div class="member-panel" aria-label="Member GitHub profiles">
-              <div class="panel-title">
-                <span>Member GitHub Profiles</span>
-              </div>
-              <div class="member-list">
-                <a class="member-card" href="https://github.com/minhquaan17" target="_blank" rel="noreferrer">
-                  <span class="member-avatar">Q</span>
-                  <span>
-                    <strong>Quan</strong>
-                    <small>@minhquaan17</small>
-                  </span>
-                  <svg class="github-icon" viewBox="0 0 16 16" aria-hidden="true">
-                    <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
-                  </svg>
-                </a>
-                <a class="member-card" href="https://github.com/chtr302" target="_blank" rel="noreferrer">
-                  <span class="member-avatar">H</span>
-                  <span>
-                    <strong>Hau</strong>
-                    <small>@chtr302</small>
-                  </span>
-                  <svg class="github-icon" viewBox="0 0 16 16" aria-hidden="true">
-                    <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
-                  </svg>
-                </a>
-                <a class="member-card" href="https://github.com/Wake0801" target="_blank" rel="noreferrer">
-                  <span class="member-avatar">T</span>
-                  <span>
-                    <strong>Thuc</strong>
-                    <small>@Wake0801</small>
-                  </span>
-                  <svg class="github-icon" viewBox="0 0 16 16" aria-hidden="true">
-                    <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
-                  </svg>
-                </a>
-              </div>
-            </div>
           </div>
-        </section>
-      </header>
+        </header>
 
-      <nav class="tab-nav" aria-label="Dashboard sections">
-        <button class="tab-button is-active" type="button" data-tab-target="predict">Predict Text</button>
-        <button class="tab-button" type="button" data-tab-target="benchmark">Benchmark Leaderboard</button>
-        <button class="tab-button" type="button" data-tab-target="explorer">Explorer</button>
-        <button class="tab-button" type="button" data-tab-target="dataset">Dataset Overview</button>
-      </nav>
-
-      <main>
-        <section id="predict" class="section tab-panel is-active" data-tab-panel="predict">
-          <div class="section-heading">
-            <div>
+        <!-- Main Body -->
+        <main class="app-body">
+          <!-- 1. Predict Text Panel -->
+          <section id="predict" class="tab-panel is-active" data-tab-panel="predict">
+            <div class="panel-intro-header">
               <h2>Predict Text</h2>
-              <p>Main interface for entering a sentence, running the advanced ONNX model, and viewing quads in an Explorer-style result.</p>
-            </div>
-          </div>
-
-          <div class="predict-layout">
-            <div class="panel result-panel">
-              <div class="panel-heading compact-heading">
-                <div>
-                  <h3>Quad Explorer Result</h3>
-                  <p>Each quad contains aspect, opinion, category, and sentiment.</p>
-                </div>
-              </div>
-              <div id="predictMessage" class="message" role="status"></div>
-              <div id="predictOutput" class="prediction-cards"></div>
+              <p>Extract aspect-based sentiment quads from raw sentences using the custom KIBAC model.</p>
             </div>
 
-            <aside class="panel input-panel">
-              <div class="panel-heading compact-heading">
-                <div>
-                  <h3>Input</h3>
-                  <p>Advanced runs by default. Turn on baseline only when you want a side-by-side prediction.</p>
+            <!-- Project Contributors & About Info (Clean Placement) -->
+            <div class="panel about-project-panel">
+              <div class="about-grid">
+                <div class="about-content">
+                  <span class="about-eyebrow">Project Context</span>
+                  <h3>About AI-ABSA: The Incremental Sentiment Engine</h3>
+                  <p class="about-description">
+                    Hello! This is a website we built focusing on analyzing the emotional aspects of AI. This project was chosen by our group as a report for our Natural Language Processing course. Basically, we will be researching and building AI models to predict the emotional aspects of a quartet using data from r/LocalLlama, a very popular site for sharing AI models.
+                  </p>
+                  <div class="about-highlights">
+                    <div class="highlight-item">
+                      <span class="hl-num">01</span>
+                      <div>
+                        <strong>Notes</strong>
+                        <p>The training data was entirely created by us, so it's a bit limited, which means the model's responses aren't always perfect or accurate. Please bear with us, hihi!</p>
+                      </div>
+                    </div>
+                    <div class="highlight-item">
+                      <span class="hl-num">02</span>
+                      <div>
+                        <strong>Github</strong>
+                        <p>Here's our GitHub repository. Feel free to check it out and give us your feedback!</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="project-meta-box">
+                  <div class="meta-card-title">GitHub Repository</div>
+                  <a class="project-repo-link" href="https://github.com/chtr302/ai-absa" target="_blank" rel="noreferrer">
+                    <div class="repo-icon-bg">
+                      <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.4 0-.2-.01-.84-.01-1.52-2.01.38-2.53-.5-2.69-.96-.09-.24-.48-.97-.82-1.17-.28-.16-.68-.56-.01-.57.63-.01 1.08.59 1.23.84.72 1.24 1.87.89 2.33.68.07-.53.28-.89.51-1.09-1.78-.21-3.64-.91-3.64-4.04 0-.89.31-1.62.82-2.19-.08-.21-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.35 7.35 0 0 1 8 3.96c.68 0 1.36.09 2 .27 1.52-1.06 2.19-.84 2.19-.84.44 1.12.16 1.95.08 2.16.51.57.82 1.3.82 2.19 0 3.14-1.87 3.83-3.65 4.04.29.26.54.76.54 1.54 0 1.11-.01 2-.01 2.27 0 .22.15.48.55.4A8.1 8.1 0 0 0 16 8.2C16 3.67 12.42 0 8 0Z"/>
+                      </svg>
+                    </div>
+                    <div class="repo-meta">
+                      <span class="repo-path">chtr302/ai-absa</span>
+                      <small>Core codebase & UI</small>
+                    </div>
+                  </a>
+
+                  <div class="team-meta-box">
+                    <div class="meta-card-title">Team Contributors</div>
+                    <div class="team-cards-grid">
+                      <a class="team-member-card" href="https://github.com/minhquaan17" target="_blank" rel="noreferrer">
+                        <span class="avatar-circle">Q</span>
+                        <div class="member-info">
+                          <strong>Nguyen Minh Quan</strong>
+                          <small>@minhquaan17</small>
+                        </div>
+                      </a>
+                      <a class="team-member-card" href="https://github.com/chtr302" target="_blank" rel="noreferrer">
+                        <span class="avatar-circle">H</span>
+                        <div class="member-info">
+                          <strong>Tran Cong Hau</strong>
+                          <small>@chtr302</small>
+                        </div>
+                      </a>
+                      <a class="team-member-card" href="https://github.com/Wake0801" target="_blank" rel="noreferrer">
+                        <span class="avatar-circle">T</span>
+                        <div class="member-info">
+                          <strong>Vu Pham Minh Thuc</strong>
+                          <small>@Wake0801</small>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <form id="predictForm" class="predict-form">
-                <label>
-                  <span>Sentence</span>
-                  <textarea id="predictSentenceInput" name="sentence" rows="5" placeholder="Example: ChatGPT responds quickly, but its coding reasoning is sometimes inaccurate." required></textarea>
-                </label>
-                <label class="toggle-row" for="includeBaselineInput">
-                  <input id="includeBaselineInput" name="include_baseline" type="checkbox">
-                  <span class="toggle-track" aria-hidden="true"></span>
-                  <span>Also run baseline model</span>
-                </label>
-                <div class="action-row">
-                  <button id="loadExampleButton" class="secondary-button" type="button">Sample 2 quads</button>
-                  <button id="predictButton" type="submit">Predict</button>
-                </div>
-              </form>
-            </aside>
-          </div>
-        </section>
+            </div>
 
-        <section id="benchmark" class="section model-section tab-panel" data-tab-panel="benchmark" hidden>
-          <div class="section-heading">
-            <div>
+            <div class="predict-layout">
+              <!-- Result Pane -->
+              <div class="panel result-panel">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Quad Explorer Result</h3>
+                    <p>Visual mapping of aspects, opinions, categories, and sentiments.</p>
+                  </div>
+                </div>
+                <div id="predictMessage" class="message" role="status"></div>
+                <div id="predictOutput" class="prediction-cards"></div>
+              </div>
+
+              <!-- Input Pane -->
+              <aside class="panel input-panel">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Configuration</h3>
+                    <p>Enter text below. Advanced KIBAC is selected by default.</p>
+                  </div>
+                </div>
+                <form id="predictForm" class="predict-form">
+                  <div class="form-group">
+                    <label for="predictSentenceInput">Sentence to Analyze</label>
+                    <textarea id="predictSentenceInput" name="sentence" placeholder="Example: I like it personally, Llama 3.1 8B is my go-to model for fine tuning. I may switch to Gemma 3 though based on what I'm reading." required></textarea>
+                  </div>
+                  <div class="form-options">
+                    <label class="toggle-row" for="includeBaselineInput">
+                      <div class="toggle-switch">
+                        <input id="includeBaselineInput" name="include_baseline" type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                      </div>
+                      <span class="toggle-label">Compare with Baseline model</span>
+                    </label>
+                  </div>
+                  <div class="action-buttons">
+                    <button id="loadExampleButton" class="btn btn-secondary" type="button">Load Sample</button>
+                    <button id="predictButton" class="btn btn-primary" type="submit">Run Inference</button>
+                  </div>
+                </form>
+              </aside>
+            </div>
+          </section>
+
+          <!-- 2. Benchmark Leaderboard Panel -->
+          <section id="benchmark" class="tab-panel" data-tab-panel="benchmark" hidden>
+            <div class="panel-intro-header">
               <h2>Benchmark Leaderboard</h2>
-              <p>Runtime view for baseline and advanced, plus an interactive data lens for understanding label distribution.</p>
+              <p>Live model comparisons and dataset label distribution matrix views.</p>
             </div>
-            <div class="toolbar">
-              <select id="benchmarkFocusSelect" aria-label="Benchmark focus">
-                <option value="category">Category focus</option>
-                <option value="sentiment">Sentiment focus</option>
-                <option value="aspect">Aspect focus</option>
-              </select>
-              <select id="benchmarkSortSelect" aria-label="Benchmark sort">
-                <option value="support">Sort by support</option>
-                <option value="positive">Sort by positive</option>
-                <option value="negative">Sort by negative</option>
-              </select>
-            </div>
-          </div>
 
-          <div id="modelCards" class="model-grid"></div>
-          <div id="benchmarkContext" class="insight-strip"></div>
+            <!-- Model Details Card Grid -->
+            <div id="modelCards" class="model-grid"></div>
 
-          <div class="benchmark-grid">
-            <div class="panel">
-              <div class="panel-heading compact-heading">
-                <div>
-                  <h3>Data Lens</h3>
-                  <p>Click a row to see how it connects with the other two ABSA factors.</p>
+            <div id="benchmarkContext" class="insight-strip"></div>
+
+            <div class="benchmark-grid">
+              <!-- Data Lens Card -->
+              <div class="panel table-panel">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Data Lens Matrix</h3>
+                    <p>Select a row to inspect its relationships across sentiment, category, and aspects.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <select id="benchmarkFocusSelect" aria-label="Benchmark focus" class="custom-select">
+                      <option value="category">Category Focus</option>
+                      <option value="sentiment">Sentiment Focus</option>
+                      <option value="aspect">Aspect Focus</option>
+                    </select>
+                    <select id="benchmarkSortSelect" aria-label="Benchmark sort" class="custom-select">
+                      <option value="support">Sort by Support</option>
+                      <option value="positive">Sort by Positive</option>
+                      <option value="negative">Sort by Negative</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Support</th>
+                        <th>Positive</th>
+                        <th>Negative</th>
+                        <th>Neutral</th>
+                      </tr>
+                    </thead>
+                    <tbody id="benchmarkMatrixBody"></tbody>
+                  </table>
                 </div>
               </div>
-              <div class="table-wrap compact-table">
+
+              <!-- Selection Detail Card -->
+              <div class="panel details-panel">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Target Focus Connections</h3>
+                    <p>Co-occurring factors related to the selected item above.</p>
+                  </div>
+                </div>
+                <div class="details-content-wrapper">
+                  <div id="benchmarkDetail" class="benchmark-detail"></div>
+                  <div id="benchmarkRelations" class="relation-grid"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Explorer Panel -->
+          <section id="explorer" class="tab-panel" data-tab-panel="explorer" hidden>
+            <div class="panel-intro-header">
+              <h2>Dataset Explorer</h2>
+              <p>Browse sentences and ground-truth ABSA quads extracted from LLM community discussions.</p>
+            </div>
+
+            <div class="panel explorer-main">
+              <!-- Filters Toolbar -->
+              <div class="toolbar-wrapper">
+                <div class="search-box">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input id="searchInput" type="search" placeholder="Search aspect, opinion, or sentence keywords...">
+                </div>
+                <div class="filters-group">
+                  <select id="categorySelect" aria-label="Category filter" class="custom-select">
+                    <option value="">All Categories</option>
+                    <option value="PERFORMANCE">PERFORMANCE</option>
+                    <option value="INTELLIGENCE">INTELLIGENCE</option>
+                    <option value="RESOURCES">RESOURCES</option>
+                    <option value="BEHAVIOR">BEHAVIOR</option>
+                    <option value="TECHNICAL">TECHNICAL</option>
+                    <option value="SOFTWARE">SOFTWARE</option>
+                    <option value="COMPARATIVE">COMPARATIVE</option>
+                  </select>
+                  <select id="sentimentSelect" aria-label="Sentiment filter" class="custom-select">
+                    <option value="">All Sentiments</option>
+                    <option value="Positive">Positive</option>
+                    <option value="Negative">Negative</option>
+                    <option value="Neutral">Neutral</option>
+                  </select>
+                  <select id="quadTypeSelect" aria-label="Quad type filter" class="custom-select">
+                    <option value="all">All Counts</option>
+                    <option value="no_quad">No Quad</option>
+                    <option value="single_quad">Single Quad</option>
+                    <option value="multi_quad">Multi Quad</option>
+                  </select>
+                  <select id="pageSizeSelect" aria-label="Page size" class="custom-select compact-select">
+                    <option value="10">10 Rows</option>
+                    <option value="20" selected>20 Rows</option>
+                    <option value="50">50 Rows</option>
+                    <option value="100">100 Rows</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Message Bar -->
+              <div id="samplesMessage" class="message-bar" role="status"></div>
+
+              <!-- Explorer Table -->
+              <div class="table-container explorer-table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Item</th>
-                      <th>Support</th>
+                      <th style="width: 80px;">ID</th>
+                      <th>Sentence</th>
+                      <th style="width: 110px;">Quads Count</th>
+                      <th>Quads (Aspect, Opinion, Category, Sentiment)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="samplesBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Pagination Footer -->
+              <div class="pagination-footer">
+                <button id="prevPage" class="btn btn-secondary btn-sm" type="button">Previous</button>
+                <span id="pageIndicator" class="page-indicator">Page 1 / 1</span>
+                <button id="nextPage" class="btn btn-secondary btn-sm" type="button">Next</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. Dataset Overview Panel -->
+          <section id="dataset" class="tab-panel" data-tab-panel="dataset" hidden>
+            <div class="panel-intro-header">
+              <h2>Dataset Overview</h2>
+              <p>Key statistics, distributions, and heatmap matrices representing the labeled ABSA corpus.</p>
+            </div>
+
+            <!-- Stats Overview Grid -->
+            <div id="overviewCards" class="overview-grid"></div>
+            <div id="overviewMessage" class="message" role="status"></div>
+
+            <!-- Distribution Charts Panel -->
+            <div class="stats-grid">
+              <div class="panel chart-card">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Category Distribution</h3>
+                    <p>Total instances labeled across our 7-category ABSA taxonomy.</p>
+                  </div>
+                </div>
+                <div id="categoryBars" class="bar-list-container"></div>
+              </div>
+
+              <div class="panel chart-card">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Sentiment Distribution</h3>
+                    <p>Breakdown of polarities assigned to LLM aspect/opinion relations.</p>
+                  </div>
+                </div>
+                <div id="sentimentBars" class="bar-list-container"></div>
+              </div>
+            </div>
+
+            <!-- Heatmap Matrix Table -->
+            <div class="panel matrix-panel">
+              <div class="panel-header">
+                <div class="panel-title-text">
+                  <h3>Category x Sentiment Co-occurrence Matrix</h3>
+                  <p>Grid representation showing polarities mapped across different categories.</p>
+                </div>
+              </div>
+              <div class="table-container">
+                <table class="matrix-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
                       <th>Positive</th>
                       <th>Negative</th>
                       <th>Neutral</th>
+                      <th>Total Support</th>
                     </tr>
                   </thead>
-                  <tbody id="benchmarkMatrixBody"></tbody>
+                  <tbody id="matrixBody"></tbody>
                 </table>
               </div>
             </div>
+          </section>
 
-            <div class="panel">
-              <div class="panel-heading compact-heading">
-                <div>
-                  <h3>Selected Distribution</h3>
-                  <p>Related factors are clickable, so users can move between sentiment, category, and aspect.</p>
+          <!-- 5. Presentation Panel -->
+          <section id="presentation" class="tab-panel" data-tab-panel="presentation" hidden>
+            <div class="panel-intro-header">
+              <h2>Project Presentation</h2>
+              <p>Present your slides directly from Canva, Google Slides, or other embedded sources inside this dashboard.</p>
+            </div>
+            
+            <div class="predict-layout">
+              <!-- Result Pane (For Slide) -->
+              <div class="panel result-panel" style="flex: 2;">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Slide Viewer</h3>
+                    <p>Live interactive presentation player.</p>
+                  </div>
+                </div>
+                <div class="presentation-iframe-wrapper" id="presentationIframeWrapper">
+                  <div class="presentation-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5; margin-bottom: 1rem;"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m10 8 5 4-5 4V8z"/></svg>
+                    <p>No presentation loaded yet. Please configure the presentation link on the right sidebar.</p>
+                  </div>
                 </div>
               </div>
-              <div id="benchmarkDetail" class="benchmark-detail"></div>
-              <div id="benchmarkRelations" class="relation-grid"></div>
+              
+              <!-- Input Pane (For Link) -->
+              <aside class="panel input-panel" style="flex: 1;">
+                <div class="panel-header">
+                  <div class="panel-title-text">
+                    <h3>Slide Config</h3>
+                    <p>Enter the public embed link for your presentation.</p>
+                  </div>
+                </div>
+                <form id="presentationForm" class="predict-form" onsubmit="return false;">
+                  <div class="form-group">
+                    <label for="presentationUrlInput">Embed Link (Canva or Google Slides)</label>
+                    <textarea id="presentationUrlInput" placeholder="Example: https://www.canva.com/design/DA.../view?embed"></textarea>
+                    <small class="form-help-text" style="color: var(--color-text-secondary); margin-top: 0.5rem; display: block; font-size: 0.75rem;">
+                      <strong>Note:</strong> Make sure to use the <em>Embed Link</em>, not the regular editing or sharing link. 
+                      <ul>
+                        <li><strong>Canva:</strong> Share -> More -> Embed -> copy the "Embed Link" (src URL).</li>
+                        <li><strong>Google Slides:</strong> File -> Share -> Publish to Web -> Embed -> copy the src URL inside the iframe.</li>
+                      </ul>
+                    </small>
+                  </div>
+                  <div class="action-buttons">
+                    <button id="loadPresetCanvaButton" class="btn btn-secondary" type="button">Use Canva Demo</button>
+                    <button id="loadPresentationButton" class="btn btn-primary" type="button">Load Slide</button>
+                  </div>
+                </form>
+              </aside>
             </div>
-          </div>
-        </section>
-
-        <section id="explorer" class="section panel tab-panel" data-tab-panel="explorer" hidden>
-          <div class="panel-heading explorer-heading">
-            <div>
-              <h2>Explorer</h2>
-              <p>Browse normalized sentences and quads without loading the full dataset into the browser.</p>
-            </div>
-          </div>
-          <div class="filter-row">
-            <input id="searchInput" type="search" placeholder="Search sentence, aspect, opinion">
-            <select id="categorySelect" aria-label="Category filter">
-              <option value="">All categories</option>
-              <option value="PERFORMANCE">PERFORMANCE</option>
-              <option value="INTELLIGENCE">INTELLIGENCE</option>
-              <option value="RESOURCES">RESOURCES</option>
-              <option value="BEHAVIOR">BEHAVIOR</option>
-              <option value="TECHNICAL">TECHNICAL</option>
-              <option value="SOFTWARE">SOFTWARE</option>
-              <option value="COMPARATIVE">COMPARATIVE</option>
-            </select>
-            <select id="sentimentSelect" aria-label="Sentiment filter">
-              <option value="">All sentiments</option>
-              <option value="Positive">Positive</option>
-              <option value="Negative">Negative</option>
-              <option value="Neutral">Neutral</option>
-            </select>
-            <select id="quadTypeSelect" aria-label="Quad type filter">
-              <option value="all">All</option>
-              <option value="no_quad">No Quad</option>
-              <option value="single_quad">Single Quad</option>
-              <option value="multi_quad">Multi Quad</option>
-            </select>
-            <select id="pageSizeSelect" aria-label="Page size">
-              <option value="10">10 rows</option>
-              <option value="20" selected>20 rows</option>
-              <option value="50">50 rows</option>
-              <option value="100">100 rows</option>
-            </select>
-          </div>
-          <div id="samplesMessage" class="message" role="status"></div>
-          <div class="table-wrap samples-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Sentence</th>
-                  <th>Quad Count</th>
-                  <th>Quads</th>
-                </tr>
-              </thead>
-              <tbody id="samplesBody"></tbody>
-            </table>
-          </div>
-          <div class="pagination">
-            <button id="prevPage" type="button">Previous</button>
-            <span id="pageIndicator">Page 1 / 1</span>
-            <button id="nextPage" type="button">Next</button>
-          </div>
-        </section>
-
-        <section id="dataset" class="section tab-panel" data-tab-panel="dataset" hidden>
-          <div class="section-heading">
-            <div>
-              <h2>Dataset Overview</h2>
-              <p>Summary statistics, label distributions, and the category x sentiment matrix. Click a number or label to jump into matching samples.</p>
-            </div>
-          </div>
-          <div id="overviewCards" class="overview-grid"></div>
-          <div id="overviewMessage" class="message" role="status"></div>
-
-          <div class="stats-grid">
-            <div class="panel">
-              <div class="panel-heading compact-heading">
-                <h2>Category Distribution</h2>
-              </div>
-              <div id="categoryBars" class="bar-list"></div>
-            </div>
-            <div class="panel">
-              <div class="panel-heading compact-heading">
-                <h2>Sentiment Distribution</h2>
-              </div>
-              <div id="sentimentBars" class="bar-list"></div>
-            </div>
-          </div>
-
-          <div class="panel stats-matrix">
-            <div class="panel-heading compact-heading">
-              <h2>Category x Sentiment Matrix</h2>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Positive</th>
-                    <th>Negative</th>
-                    <th>Neutral</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody id="matrixBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </main>
+          </section>
+        </main>
       </div>
     </div>
-  </div>
-</div>
 
+    <!-- JS Logic -->
     <script src="{{ url_for('static', filename='leaderboard.js') }}"></script>
   </body>
 </html>

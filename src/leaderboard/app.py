@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
 from typing import Any
 
 from flask import Flask, jsonify, render_template, request
 
 from .data_loader import load_dataset
-from .onnx_runner import RUNTIME_NAME, create_onnx_session, get_model_size_mb, predict_one
+from .onnx_runner import RUNTIME_NAME, create_onnx_session, get_model_size_mb, predict_one, predict_ensemble
 from .stats import (
     compute_backend_unknowns,
     compute_category_distribution,
@@ -28,8 +29,9 @@ TEMPLATE_DIR = PROJECT_ROOT / "templates"
 STATIC_DIR = PROJECT_ROOT / "static"
 MODEL_TYPES = ("baseline", "advanced")
 DEFAULT_MODEL_PATHS = {
-    "advanced": "models/advanced/model.onnx",
-    "baseline": "models/baseline/model.onnx",
+    "advanced_v4": "models/advanced/kibac.onnx",
+    "advanced_newest": "models/advanced/kibac_newest.onnx",
+    "baseline": "models/basic/model.json",
 }
 
 app = Flask(
@@ -78,47 +80,129 @@ def _resolve_model_path(model_path: str) -> Path:
 
 def _default_model_path(model_type: str) -> str:
     env_name = f"AI_ABSA_{model_type.upper()}_MODEL_PATH"
-    return os.getenv(env_name) or DEFAULT_MODEL_PATHS[model_type]
+    return os.getenv(env_name) or DEFAULT_MODEL_PATHS.get(model_type, "")
 
 
 def _get_model_session(model_type: str):
-    model_path = _default_model_path(model_type)
-    resolved_model_path = _resolve_model_path(model_path)
-    if not resolved_model_path.exists():
-        raise FileNotFoundError(f"{model_type} model path does not exist: {model_path}")
+    if model_type == "advanced":
+        path_v4 = _resolve_model_path(DEFAULT_MODEL_PATHS["advanced_v4"])
+        path_newest = _resolve_model_path(DEFAULT_MODEL_PATHS["advanced_newest"])
+        
+        if not path_v4.exists():
+            raise FileNotFoundError(f"v4 model path does not exist: {path_v4}")
+        if not path_newest.exists():
+            raise FileNotFoundError(f"newest model path does not exist: {path_newest}")
+            
+        if "advanced_v4" not in MODEL_SESSIONS or MODEL_PATHS.get("advanced_v4") != path_v4:
+            MODEL_SESSIONS["advanced_v4"] = create_onnx_session(str(path_v4))
+            MODEL_PATHS["advanced_v4"] = path_v4
+            
+        if "advanced_newest" not in MODEL_SESSIONS or MODEL_PATHS.get("advanced_newest") != path_newest:
+            MODEL_SESSIONS["advanced_newest"] = create_onnx_session(str(path_newest))
+            MODEL_PATHS["advanced_newest"] = path_newest
+            
+        return (MODEL_SESSIONS["advanced_v4"], MODEL_SESSIONS["advanced_newest"]), path_v4
+    else:
+        model_path = _default_model_path(model_type)
+        resolved_model_path = _resolve_model_path(model_path)
+        if not resolved_model_path.exists():
+            raise FileNotFoundError(f"{model_type} model path does not exist: {model_path}")
 
-    if model_type not in MODEL_SESSIONS or MODEL_PATHS.get(model_type) != resolved_model_path:
-        MODEL_SESSIONS[model_type] = create_onnx_session(str(resolved_model_path))
-        MODEL_PATHS[model_type] = resolved_model_path
+        if model_type not in MODEL_SESSIONS or MODEL_PATHS.get(model_type) != resolved_model_path:
+            if model_type == "baseline":
+                from src.models.basic.interface import get_model_interface
+                MODEL_SESSIONS[model_type] = get_model_interface(str(resolved_model_path))
+            else:
+                MODEL_SESSIONS[model_type] = create_onnx_session(str(resolved_model_path))
+            MODEL_PATHS[model_type] = resolved_model_path
 
-    return MODEL_SESSIONS[model_type], resolved_model_path
+        return MODEL_SESSIONS[model_type], resolved_model_path
 
 
 def _run_prediction(model_type: str, sentence: str) -> dict[str, Any]:
-    session, resolved_model_path = _get_model_session(model_type)
-    result = predict_one(session, sentence)
-    return {
-        "model_type": model_type,
-        "model_path": str(resolved_model_path),
-        "runtime": RUNTIME_NAME,
-        **result,
-    }
+    if model_type == "advanced":
+        sessions, resolved_model_path = _get_model_session(model_type)
+        session_v4, session_newest = sessions
+        result = predict_ensemble(session_v4, session_newest, sentence)
+        return {
+            "model_type": model_type,
+            "model_path": str(resolved_model_path.parent),
+            "runtime": RUNTIME_NAME,
+            **result,
+        }
+    elif model_type == "baseline":
+        interface, resolved_model_path = _get_model_session(model_type)
+        result = interface.predict(sentence)
+        return {
+            "model_type": model_type,
+            "model_path": str(resolved_model_path),
+            "runtime": "Rule-Based Engine",
+            "sentence": sentence,
+            "quads": [
+                {
+                    "aspect": q.get("aspect") or "None",
+                    "opinion": q.get("opinion") or "None",
+                    "category": q.get("category") or "UNKNOWN",
+                    "sentiment": q.get("sentiment") or "Neutral"
+                }
+                for q in result.get("quads", [])
+            ],
+        }
+    else:
+        session, resolved_model_path = _get_model_session(model_type)
+        result = predict_one(session, sentence)
+        return {
+            "model_type": model_type,
+            "model_path": str(resolved_model_path),
+            "runtime": RUNTIME_NAME,
+            **result,
+        }
 
 
 def _model_payload(model_type: str) -> dict[str, Any] | None:
-    resolved_model_path = _resolve_model_path(_default_model_path(model_type))
-    if not resolved_model_path.exists():
-        return None
+    if model_type == "advanced":
+        path_v4 = _resolve_model_path(DEFAULT_MODEL_PATHS["advanced_v4"])
+        path_newest = _resolve_model_path(DEFAULT_MODEL_PATHS["advanced_newest"])
+        if not path_v4.exists() or not path_newest.exists():
+            return None
+        size_mb = get_model_size_mb(str(path_v4)) + get_model_size_mb(str(path_newest))
+        return {
+            "model_name": "kibac_ensemble (v4 + newest)",
+            "model_type": model_type,
+            "model_path": str(path_v4.parent),
+            "model_size_mb": round(size_mb, 3),
+            "runtime": RUNTIME_NAME,
+            "cpu_profile": "2 CPU cores",
+            "status": "ready",
+        }
+    elif model_type == "baseline":
+        resolved_model_path = _resolve_model_path(_default_model_path(model_type))
+        if not resolved_model_path.exists():
+            return None
 
-    return {
-        "model_name": resolved_model_path.stem,
-        "model_type": model_type,
-        "model_path": str(resolved_model_path),
-        "model_size_mb": get_model_size_mb(str(resolved_model_path)),
-        "runtime": RUNTIME_NAME,
-        "cpu_profile": "2 CPU cores",
-        "status": "ready",
-    }
+        return {
+            "model_name": "Lexicon Baseline (Basic)",
+            "model_type": model_type,
+            "model_path": str(resolved_model_path),
+            "model_size_mb": get_model_size_mb(str(resolved_model_path)),
+            "runtime": "Rule-Based Engine",
+            "cpu_profile": "1 CPU core",
+            "status": "ready",
+        }
+    else:
+        resolved_model_path = _resolve_model_path(_default_model_path(model_type))
+        if not resolved_model_path.exists():
+            return None
+
+        return {
+            "model_name": resolved_model_path.stem,
+            "model_type": model_type,
+            "model_path": str(resolved_model_path),
+            "model_size_mb": get_model_size_mb(str(resolved_model_path)),
+            "runtime": RUNTIME_NAME,
+            "cpu_profile": "2 CPU cores",
+            "status": "ready",
+        }
 
 
 @app.get("/")
@@ -192,6 +276,9 @@ def model_comparison():
     )
 
 
+INFERENCE_LOCK = threading.Lock()
+
+
 @app.post("/api/predict")
 def predict():
     body = request.get_json(silent=True) or {}
@@ -202,9 +289,10 @@ def predict():
         return _error("sentence is required")
 
     try:
-        results = {"advanced": _run_prediction("advanced", sentence)}
-        if include_baseline:
-            results["baseline"] = _run_prediction("baseline", sentence)
+        with INFERENCE_LOCK:
+            results = {"advanced": _run_prediction("advanced", sentence)}
+            if include_baseline:
+                results["baseline"] = _run_prediction("baseline", sentence)
     except ImportError as exc:
         return _error(f"Prediction dependency missing: {exc}", 500)
     except FileNotFoundError as exc:
@@ -215,5 +303,13 @@ def predict():
     return jsonify({"sentence": sentence, "results": results})
 
 
+flask_app = app
+try:
+    from a2wsgi import WSGIMiddleware
+    app = WSGIMiddleware(flask_app)
+except ImportError:
+    pass
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    flask_app.run(host="0.0.0.0", port=8000, debug=True, use_reloader=False)
+
